@@ -43,6 +43,13 @@ execSync(
   )} ${path.join(__sourcedir, 'reader/reader.html')} ${__builddir}`,
 );
 
+execSync(
+  `cp -rf ${path.join(__sourcedir, './themes')} ${path.join(
+    __builddir,
+    './themes',
+  )}`,
+);
+
 const ctx = await esbuild.context({
   entryPoints: [
     path.join(__sourcedir, './service-worker.ts'),
@@ -50,6 +57,7 @@ const ctx = await esbuild.context({
     path.join(__sourcedir, './app.tsx'),
     path.join(__sourcedir, './reader.tsx'),
   ],
+  sourcemap: 'inline',
   outdir: __builddir,
   format: 'esm',
   platform: 'browser',

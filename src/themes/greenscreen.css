@@ -1,0 +1,10 @@
+html,
+body {
+  background: black;
+  color: green;
+  font-family: monospace;
+}
+
+* {
+  margin: 1rem 0;
+}
