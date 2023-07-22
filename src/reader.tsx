@@ -56,7 +56,7 @@ function Reader() {
       });
 
       const style = body_document.createElement('link');
-      style.href = chrome.runtime.getURL('themes/greenscreen.css');
+      style.href = chrome.runtime.getURL('themes/jamesh.me.css');
       style.rel = 'stylesheet';
 
       head.appendChild(style);

@@ -1,11 +1,24 @@
 import { safeUrl } from './common/safe-url';
 import { extension } from './extension';
+import { Signature } from './signature';
+import { getPrivateKeyFromStorage } from './storage/private_key';
+import { getUserFromStorage } from './storage/user';
 
 extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Received message on service worker', message);
   (async () => {
     if (message === 'return-sender') {
       return sender;
+    }
+    if (message === 'request-signature') {
+      const user = await getUserFromStorage();
+      const private_key = await getPrivateKeyFromStorage();
+
+      if (!user || !private_key) {
+        return null;
+      }
+
+      return await Signature.getSignature(user.id, user.domain, private_key);
     }
     if (
       typeof message === 'object' &&
@@ -18,7 +31,24 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return null;
       }
 
-      const response = await fetch(url, { method: 'GET' });
+      const user = await getUserFromStorage();
+      const private_key = await getPrivateKeyFromStorage();
+
+      if (!user || !private_key) {
+        return null;
+      }
+      const { phrase, signature } = await Signature.getSignature(
+        user.id,
+        user.domain,
+        private_key,
+      );
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Skelly ${phrase} ${signature}`,
+        },
+      });
 
       const text = await response.text();
 
