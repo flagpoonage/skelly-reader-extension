@@ -31,22 +31,22 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return null;
       }
 
-      const user = await getUserFromStorage();
-      const private_key = await getPrivateKeyFromStorage();
+      // const user = await getUserFromStorage();
+      // const private_key = await getPrivateKeyFromStorage();
 
-      if (!user || !private_key) {
-        return null;
-      }
-      const { phrase, signature } = await Signature.getSignature(
-        user.id,
-        user.domain,
-        private_key,
-      );
+      // if (!user || !private_key) {
+      //   return null;
+      // }
+      // const { phrase, signature } = await Signature.getSignature(
+      //   user.id,
+      //   user.domain,
+      //   private_key,
+      // );
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          Authorization: `Skelly ${phrase} ${signature}`,
+          // Authorization: `Skelly ${phrase} ${signature}`,
         },
       });
 
