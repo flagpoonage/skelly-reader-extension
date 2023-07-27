@@ -24,11 +24,7 @@ function Reader() {
         type: 'fetch',
         url: file,
       });
-      // const response = await fetch(url, {
-      //   method: 'GET',
-      // });
 
-      // const data = await response.text();
       const parser = new DOMParser();
       const body_document = parser.parseFromString(response, 'text/html');
 
@@ -56,7 +52,7 @@ function Reader() {
       });
 
       const style = body_document.createElement('link');
-      style.href = chrome.runtime.getURL('themes/jamesh.me.css');
+      style.href = chrome.runtime.getURL('themes/greenscreen.css');
       style.rel = 'stylesheet';
 
       head.appendChild(style);
@@ -66,8 +62,6 @@ function Reader() {
       const doc_string = sx.serializeToString(body_document);
 
       setDocumentString(doc_string);
-
-      // document.createDocumentFragment();
     })();
   }, [file]);
 

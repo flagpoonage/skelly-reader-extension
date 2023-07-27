@@ -1,13 +1,10 @@
-import {
-  generateSigningKeyPair,
-  signPayloadWithJsonWebKey,
-  verifyPayloadWithJsonWebKey,
-} from './common/crypto-utils';
 import { safeUrl } from './common/safe-url';
 import { extension } from './extension';
 import { Signature } from './signature';
 import { getPrivateKeyFromStorage } from './storage/private_key';
 import { getUserFromStorage } from './storage/user';
+
+const extension_root = `chrome-extension://${extension.runtime.id}`;
 
 extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Received message on service worker', message);
@@ -36,23 +33,23 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return null;
       }
 
-      // const user = await getUserFromStorage();
-      // const private_key = await getPrivateKeyFromStorage();
+      const user = await getUserFromStorage();
+      const private_key = await getPrivateKeyFromStorage();
 
-      // if (!user || !private_key) {
-      //   return null;
-      // }
-      // const { phrase, signature } = await Signature.getSignature(
-      //   user.id,
-      //   user.domain,
-      //   private_key,
-      // );
+      const headers = new Headers();
+
+      if (user && private_key) {
+        const { phrase, signature } = await Signature.getSignature(
+          user.id,
+          user.domain,
+          private_key,
+        );
+        headers.set('Authorization', `Skelly ${phrase} ${signature}`);
+      }
 
       const response = await fetch(url_result.value, {
         method: 'GET',
-        headers: {
-          // Authorization: `Skelly ${phrase} ${signature}`,
-        },
+        headers,
       });
 
       const text = await response.text();
@@ -113,42 +110,20 @@ extension.tabs.onUpdated.addListener((tabId, info) => {
   });
 });
 
-(async () => {
-  const pair = await generateSigningKeyPair(true);
+extension.webRequest.onHeadersReceived.addListener(
+  (req) => {
+    if (req.initiator !== extension_root) {
+      return;
+    }
 
-  if (!pair.success) {
-    console.error('Cannot generate keypair', pair.error);
-    return;
-  }
-
-  const data = 'This is a string';
-
-  const signature = await signPayloadWithJsonWebKey(
-    data,
-    pair.value.privateKey,
-  );
-
-  if (!signature.success) {
-    console.error('Cannot create signature', signature.error);
-    return;
-  }
-
-  const verification = await verifyPayloadWithJsonWebKey(
-    data,
-    signature.value,
-    pair.value.publicKey,
-  );
-
-  if (!verification.success) {
-    console.error('Cannot verify signature', verification.error);
-    return;
-  }
-
-  console.log(
-    'Signature verified',
-    data,
-    signature.value,
-    pair.value.privateKey,
-    pair.value.publicKey,
-  );
-})();
+    return {
+      responseHeaders: req.responseHeaders?.filter(
+        (a) => a.name !== 'set-cookie',
+      ),
+    };
+  },
+  {
+    urls: ['http://*/*', 'https://*/*'],
+  },
+  ['responseHeaders', 'extraHeaders'],
+);

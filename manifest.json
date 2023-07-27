@@ -20,6 +20,6 @@
   "background": {
     "service_worker": "service-worker.js"
   },
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "webRequest"],
   "host_permissions": ["http://*/*", "https://*/*"]
 }
