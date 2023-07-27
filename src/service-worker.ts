@@ -1,3 +1,8 @@
+import {
+  generateSigningKeyPair,
+  signPayloadWithJsonWebKey,
+  verifyPayloadWithJsonWebKey,
+} from './common/crypto-utils';
 import { safeUrl } from './common/safe-url';
 import { extension } from './extension';
 import { Signature } from './signature';
@@ -25,9 +30,9 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
       message.type === 'fetch' &&
       typeof message.url === 'string'
     ) {
-      const url = safeUrl(message.url);
+      const url_result = safeUrl(message.url);
 
-      if (!url) {
+      if (!url_result.success) {
         return null;
       }
 
@@ -43,7 +48,7 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
       //   private_key,
       // );
 
-      const response = await fetch(url, {
+      const response = await fetch(url_result.value, {
         method: 'GET',
         headers: {
           // Authorization: `Skelly ${phrase} ${signature}`,
@@ -69,11 +74,13 @@ extension.tabs.onCreated.addListener((tab) => {
     return;
   }
 
-  const url = safeUrl(tab_url_value);
+  const url_result = safeUrl(tab_url_value);
 
-  if (!url) {
+  if (!url_result.success) {
     return;
   }
+
+  const url = url_result.value;
 
   if (!url.pathname.endsWith('.skelly')) {
     return;
@@ -89,11 +96,13 @@ extension.tabs.onUpdated.addListener((tabId, info) => {
     return;
   }
 
-  const url = safeUrl(info.url);
+  const url_result = safeUrl(info.url);
 
-  if (!url) {
+  if (!url_result.success) {
     return;
   }
+
+  const url = url_result.value;
 
   if (!url.pathname.endsWith('.skelly')) {
     return;
@@ -105,41 +114,41 @@ extension.tabs.onUpdated.addListener((tabId, info) => {
 });
 
 (async () => {
-  const key = await globalThis.crypto.subtle.generateKey(
-    {
-      name: 'RSA-PSS',
-      hash: 'SHA-256',
-      modulusLength: 4096,
-      publicExponent: new Uint8Array([1, 0, 1]),
-    },
-    true,
-    ['sign', 'verify'],
-  );
+  const pair = await generateSigningKeyPair(true);
 
-  // function ab2str(buf: ArrayBuffer) {
-  //   return String.fromCharCode.apply(
-  //     null,
-  //     new Uint8Array(buf) as unknown as number[],
-  //   );
-  // }
-
-  // globalThis.crypto.subtle.exportKey('jwk');
-  async function exportCryptoKey(type: 'public' | 'private', key: CryptoKey) {
-    const exported = await globalThis.crypto.subtle.exportKey(
-      'jwk',
-      // type === 'public' ? 'spki' : 'pkcs8',
-      key,
-    );
-    // const n = type.toUpperCase();
-    // const exportedAsString = ab2str(exported);
-    // const exportedAsBase64 = globalThis.btoa(exportedAsString);
-    // const pemExported = `-----BEGIN ${n} KEY-----\n${exportedAsBase64}\n-----END ${n} KEY-----`;
-    return exported;
+  if (!pair.success) {
+    console.error('Cannot generate keypair', pair.error);
+    return;
   }
 
-  const pem_priv = await exportCryptoKey('private', key.privateKey);
-  const pem_pub = await exportCryptoKey('public', key.publicKey);
+  const data = 'This is a string';
 
-  console.log(pem_priv);
-  console.log(pem_pub);
+  const signature = await signPayloadWithJsonWebKey(
+    data,
+    pair.value.privateKey,
+  );
+
+  if (!signature.success) {
+    console.error('Cannot create signature', signature.error);
+    return;
+  }
+
+  const verification = await verifyPayloadWithJsonWebKey(
+    data,
+    signature.value,
+    pair.value.publicKey,
+  );
+
+  if (!verification.success) {
+    console.error('Cannot verify signature', verification.error);
+    return;
+  }
+
+  console.log(
+    'Signature verified',
+    data,
+    signature.value,
+    pair.value.privateKey,
+    pair.value.publicKey,
+  );
 })();

@@ -1,7 +1,5 @@
+import { asSyncFailable } from './failable';
+
 export function safeUrl(url: string) {
-  try {
-    return new URL(url);
-  } catch (ex) {
-    return;
-  }
+  return asSyncFailable(() => new URL(url));
 }

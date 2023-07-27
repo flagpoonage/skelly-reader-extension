@@ -40,7 +40,10 @@ execSync(
   `cp ${path.join(__sourcedir, 'popup/popup.html')} ${path.join(
     __sourcedir,
     'app/app.html',
-  )} ${path.join(__sourcedir, 'reader/reader.html')} ${__builddir}`,
+  )} ${path.join(__sourcedir, 'reader/reader.html')} ${path.join(
+    __sourcedir,
+    'crypto/crypto.html',
+  )} ${__builddir}`,
 );
 
 execSync(
@@ -55,6 +58,7 @@ const ctx = await esbuild.context({
     path.join(__sourcedir, './service-worker.ts'),
     path.join(__sourcedir, './popup.tsx'),
     path.join(__sourcedir, './app.tsx'),
+    path.join(__sourcedir, './crypto.tsx'),
     path.join(__sourcedir, './reader.tsx'),
   ],
   sourcemap: 'inline',

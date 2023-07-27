@@ -29,6 +29,13 @@ function Popup() {
   return (
     <div>
       <button onClick={onClick}>Open App</button>
+      <button
+        onClick={() =>
+          chrome.tabs.create({ url: `${chrome.runtime.getURL('crypto.html')}` })
+        }
+      >
+        Open Crypto
+      </button>
     </div>
   );
 }
