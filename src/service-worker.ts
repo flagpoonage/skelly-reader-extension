@@ -116,23 +116,25 @@ extension.tabs.onUpdated.addListener((tabId, info) => {
     ['sign', 'verify'],
   );
 
-  function ab2str(buf: ArrayBuffer) {
-    return String.fromCharCode.apply(
-      null,
-      new Uint8Array(buf) as unknown as number[],
-    );
-  }
+  // function ab2str(buf: ArrayBuffer) {
+  //   return String.fromCharCode.apply(
+  //     null,
+  //     new Uint8Array(buf) as unknown as number[],
+  //   );
+  // }
 
+  // globalThis.crypto.subtle.exportKey('jwk');
   async function exportCryptoKey(type: 'public' | 'private', key: CryptoKey) {
     const exported = await globalThis.crypto.subtle.exportKey(
-      type === 'public' ? 'spki' : 'pkcs8',
+      'jwk',
+      // type === 'public' ? 'spki' : 'pkcs8',
       key,
     );
-    const n = type.toUpperCase();
-    const exportedAsString = ab2str(exported);
-    const exportedAsBase64 = globalThis.btoa(exportedAsString);
-    const pemExported = `-----BEGIN ${n} KEY-----\n${exportedAsBase64}\n-----END ${n} KEY-----`;
-    return pemExported;
+    // const n = type.toUpperCase();
+    // const exportedAsString = ab2str(exported);
+    // const exportedAsBase64 = globalThis.btoa(exportedAsString);
+    // const pemExported = `-----BEGIN ${n} KEY-----\n${exportedAsBase64}\n-----END ${n} KEY-----`;
+    return exported;
   }
 
   const pem_priv = await exportCryptoKey('private', key.privateKey);
