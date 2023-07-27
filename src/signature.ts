@@ -15,7 +15,11 @@ export const Signature = new (class SignatureClass {
   private last_signature: SignedPayload | null = null;
 
   createIdentityString = (id: string, domain: string, date?: Date) => {
-    return `${id}@${domain}@${(date ?? new Date()).toISOString()}`;
+    return JSON.stringify({
+      i: id,
+      d: domain,
+      t: Math.floor((date ?? new Date()).getTime() / 1000),
+    });
   };
 
   createSignature = async (id: string, domain: string, privateKey: string) => {
@@ -51,9 +55,18 @@ export const Signature = new (class SignatureClass {
     return asFailable(async () => payload);
   };
 
-  signIdentity = async (id: string, domain: string, privateKey: string) => {
+  signIdentity = async (
+    id: string,
+    domain: string,
+    privateKey: string,
+    useCached = true,
+  ) => {
     const now = new Date().getTime();
-    if (!this.last_signature || this.last_signature.time < now - 10000) {
+    if (
+      !this.last_signature ||
+      this.last_signature.time < now - 10000 ||
+      !useCached
+    ) {
       return this.createSignature(id, domain, privateKey);
     }
 
