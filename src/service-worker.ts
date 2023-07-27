@@ -20,7 +20,7 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return null;
       }
 
-      return await Signature.getSignature(user.id, user.domain, private_key);
+      return await Signature.signIdentity(user.id, user.domain, private_key);
     }
     if (
       typeof message === 'object' &&
@@ -39,12 +39,18 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const headers = new Headers();
 
       if (user && private_key) {
-        const { phrase, signature } = await Signature.getSignature(
+        const result = await Signature.signIdentity(
           user.id,
           user.domain,
           private_key,
         );
-        headers.set('Authorization', `Skelly ${phrase} ${signature}`);
+
+        if (result.success) {
+          const { phrase, signature } = result.value;
+          headers.set('Authorization', `Skelly ${phrase} ${signature.base64}`);
+        } else {
+          console.error('Cannot sign payload', result.error);
+        }
       }
 
       const response = await fetch(url_result.value, {

@@ -12,6 +12,13 @@ export type FailableResult<T = unknown, E extends Error = Error> =
   | FailableSuccess<T>
   | FailableError<E>;
 
+export function asSuccess<T = unknown>(value: T): FailableSuccess<T> {
+  return {
+    success: true,
+    value,
+  };
+}
+
 export async function asFailable<T = unknown, E extends Error = Error>(
   handler: () => Promise<T>,
 ): Promise<FailableResult<T, E>> {
