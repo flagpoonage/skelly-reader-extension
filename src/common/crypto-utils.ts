@@ -51,6 +51,13 @@ export async function importJsonWebKey(
   );
 }
 
+export type CryptoKeyInput = string | JsonWebKey | CryptoKey;
+export type SignatureInfoInput =
+  | SignatureInfo
+  | ArrayBuffer
+  | Uint8Array
+  | string;
+
 export interface SignatureInfo {
   buffer: ArrayBuffer;
   bytes: Uint8Array;
@@ -58,7 +65,7 @@ export interface SignatureInfo {
 }
 
 export async function getCryptoKeyFromValue(
-  key: string | JsonWebKey | CryptoKey,
+  key: CryptoKeyInput,
   usage: 'sign' | 'verify',
 ) {
   if (typeof key === 'string') {
@@ -72,7 +79,7 @@ export async function getCryptoKeyFromValue(
 
 export async function signPayloadWithJsonWebKey(
   payload: string,
-  key: string | JsonWebKey | CryptoKey,
+  key: CryptoKeyInput,
 ): Promise<FailableResult<SignatureInfo>> {
   const signing_key_result = await getCryptoKeyFromValue(key, 'sign');
 
@@ -113,7 +120,7 @@ function base64ToBytes(base64: string) {
 }
 
 export function getSignatureInfoOfPayload(
-  payload: SignatureInfo | ArrayBuffer | Uint8Array | string,
+  payload: SignatureInfoInput,
 ): SignatureInfo {
   if (typeof payload === 'string') {
     const bytes = base64ToBytes(payload);
@@ -149,8 +156,8 @@ export function getSignatureInfoOfPayload(
 
 export async function verifyPayloadWithJsonWebKey(
   data: string | Uint8Array | ArrayBuffer,
-  signature: SignatureInfo | ArrayBuffer | Uint8Array | string,
-  key: string | JsonWebKey | CryptoKey,
+  signature: SignatureInfoInput,
+  key: CryptoKeyInput,
 ) {
   const verify_key_result = await getCryptoKeyFromValue(key, 'verify');
 

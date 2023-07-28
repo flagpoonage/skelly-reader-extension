@@ -7,7 +7,7 @@ export function setPrivateKeyInStorage(key: string) {
 export async function getPrivateKeyFromStorage() {
   const { private_key } = await extension.storage.local.get('private_key');
 
-  if (!private_key || typeof private_key !== 'string') {
+  if (!private_key) {
     return null;
   }
 

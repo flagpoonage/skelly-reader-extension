@@ -1,6 +1,8 @@
 import {
+  CryptoKeyInput,
   SignatureInfo,
-  importJsonWebKeyFromString,
+  getCryptoKeyFromValue,
+  // importJsonWebKeyFromString,
   signPayloadWithJsonWebKey,
 } from './common/crypto-utils';
 import { asFailable, asSuccess } from './common/failable';
@@ -22,9 +24,14 @@ export const Signature = new (class SignatureClass {
     });
   };
 
-  createSignature = async (id: string, domain: string, privateKey: string) => {
+  createSignature = async (
+    id: string,
+    domain: string,
+    privateKey: CryptoKeyInput,
+  ) => {
     if (!this.key) {
-      const key_result = await importJsonWebKeyFromString(privateKey, 'sign');
+      const key_result = await getCryptoKeyFromValue(privateKey, 'sign');
+      // const key_result = await importJsonWebKeyFromString(privateKey, 'sign');
       if (!key_result.success) {
         return key_result;
       }
@@ -58,7 +65,7 @@ export const Signature = new (class SignatureClass {
   signIdentity = async (
     id: string,
     domain: string,
-    privateKey: string,
+    privateKey: CryptoKeyInput,
     useCached = true,
   ) => {
     const now = new Date().getTime();
