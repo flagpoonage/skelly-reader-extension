@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
+import { useReaderContext } from './ReaderContext';
 
 interface Props {
   file: string | null;
 }
 
 export function ReaderContent({ file }: Props) {
+  const { selectedTheme } = useReaderContext();
   const [originalSource, setOriginalSource] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,24 +69,25 @@ export function ReaderContent({ file }: Props) {
       return;
     }
 
-    const head = strippedDocument.getElementsByTagName('head')[0];
-
     Array.from(
       strippedDocument.querySelectorAll('link[rel=stylesheet]'),
     ).forEach((el) => el.remove());
 
-    const style = strippedDocument.createElement('link');
-    style.href = chrome.runtime.getURL('themes/greenscreen.css');
-    style.rel = 'stylesheet';
+    if (selectedTheme) {
+      const head = strippedDocument.getElementsByTagName('head')[0];
+      const style = strippedDocument.createElement('link');
+      style.href = chrome.runtime.getURL(`themes/${selectedTheme}.css`);
+      style.rel = 'stylesheet';
 
-    head.appendChild(style);
+      head.appendChild(style);
+    }
 
     const sx = new XMLSerializer();
 
     const doc_string = sx.serializeToString(strippedDocument);
 
     return doc_string;
-  }, [strippedDocument]);
+  }, [strippedDocument, selectedTheme]);
 
   return (
     <div className="reader-content">
