@@ -9,14 +9,21 @@ interface Props {
 export function ReaderContent({ file }: Props) {
   const { selectedTheme } = useReaderContext();
   const [originalSource, setOriginalSource] = useState<string | null>(null);
-
-  useEffect(() => {
+  const url = useMemo(() => {
     if (!file) {
-      return;
+      return null;
     }
 
-    const url = safeUrl(file);
+    const url_result = safeUrl(file);
 
+    if (!url_result.success) {
+      return null;
+    }
+
+    return url_result.value;
+  }, [file]);
+
+  useEffect(() => {
     if (!url) {
       return;
     }
@@ -24,12 +31,12 @@ export function ReaderContent({ file }: Props) {
     (async () => {
       const response = await chrome.runtime.sendMessage({
         type: 'fetch',
-        url: file,
+        url: url,
       });
 
       setOriginalSource(response);
     })();
-  }, [file]);
+  }, [url]);
 
   const strippedDocument = useMemo(() => {
     if (!originalSource) {
@@ -41,15 +48,20 @@ export function ReaderContent({ file }: Props) {
 
     Array.from(
       body_document.querySelectorAll(
-        'link[rel=stylesheet], video, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
+        'link[rel=stylesheet], link[rel=preload], video, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
       ),
     ).forEach((el) => {
-      console.log('Stripping non-compliant element', el);
+      // console.log('Stripping non-compliant element', el);
       el.remove();
     });
 
+    Array.from(body_document.querySelectorAll('a[href^="#"]')).forEach((a) => {
+      const href = a.getAttribute('href');
+      a.setAttribute('href', `about:srcdoc${href}`);
+    });
+
     Array.from(body_document.getElementsByTagName('img')).forEach((el) => {
-      console.log('Replacing image with marker', el);
+      // console.log('Replacing image with marker', el);
       const anchor = body_document.createElement('a');
       anchor.setAttribute('skelly-image', el.src);
       anchor.innerHTML = el.src;
@@ -57,7 +69,7 @@ export function ReaderContent({ file }: Props) {
     });
 
     Array.from(body_document.querySelectorAll('[style]')).forEach((el) => {
-      console.log('Stripping inline style', el.getAttribute('style'), el);
+      // console.log('Stripping inline style', el.getAttribute('style'), el);
       el.removeAttribute('style');
     });
 
@@ -73,8 +85,8 @@ export function ReaderContent({ file }: Props) {
       strippedDocument.querySelectorAll('link[rel=stylesheet]'),
     ).forEach((el) => el.remove());
 
+    const head = strippedDocument.getElementsByTagName('head')[0];
     if (selectedTheme) {
-      const head = strippedDocument.getElementsByTagName('head')[0];
       const style = strippedDocument.createElement('link');
       style.href = chrome.runtime.getURL(`themes/${selectedTheme}.css`);
       style.rel = 'stylesheet';
@@ -82,12 +94,44 @@ export function ReaderContent({ file }: Props) {
       head.appendChild(style);
     }
 
+    if (url) {
+      const base = strippedDocument.createElement('base');
+      base.href = url.origin;
+      head.prepend(base);
+    }
+
+    // <meta
+    //   http-equiv="Content-Security-Policy"
+    //   content="default-src 'self'; img-src https://*; child-src 'none';"
+    // />;
+
+    const csp_header = strippedDocument.createElement('meta');
+    csp_header.httpEquiv = 'Content-Security-Policy';
+    csp_header.content = "script-src 'unsafe-inline'";
+    head.append(csp_header);
+
+    const window_script = strippedDocument.createElement('script');
+
+    window_script.innerHTML = `window.__EXTENSION_ID = ${
+      chrome.runtime.id
+    }; window.__KNOWN_IDENTIFIER = ${crypto.randomUUID()};`;
+
+    // window_script.nonce = 'nonced';
+    // window_script.setAttribute('nonce', 'nonced');
+
+    head.appendChild(window_script);
+
+    const link_script = strippedDocument.createElement('script');
+    link_script.src = `chrome-extension://${chrome.runtime.id}/injected-scripts/links.js`;
+
+    head.appendChild(link_script);
+
     const sx = new XMLSerializer();
 
     const doc_string = sx.serializeToString(strippedDocument);
 
     return doc_string;
-  }, [strippedDocument, selectedTheme]);
+  }, [strippedDocument, selectedTheme, url]);
 
   return (
     <div className="reader-content">

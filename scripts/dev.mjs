@@ -60,6 +60,7 @@ const ctx = await esbuild.context({
     path.join(__sourcedir, './app.tsx'),
     path.join(__sourcedir, './crypto.tsx'),
     path.join(__sourcedir, './reader.tsx'),
+    path.join(__sourcedir, './injected-scripts/links.ts'),
   ],
   sourcemap: 'inline',
   outdir: __builddir,
