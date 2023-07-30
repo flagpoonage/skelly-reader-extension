@@ -57,7 +57,7 @@ export function ReaderContent({
 
     Array.from(
       body_document.querySelectorAll(
-        'link[rel=stylesheet], link[rel=preload], video, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
+        'link[rel=stylesheet], link[rel=preload], video, iframe, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
       ),
     ).forEach((el) => {
       // console.log('Stripping non-compliant element', el);
