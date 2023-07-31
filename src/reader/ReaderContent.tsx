@@ -3,25 +3,25 @@ import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
 
 interface Props {
-  file: string | null;
+  target_url: string | null;
 }
 
-export function ReaderContent({ file }: Props) {
+export function ReaderContent({ target_url }: Props) {
   const { selectedTheme } = useReaderContext();
   const [originalSource, setOriginalSource] = useState<string | null>(null);
   const url = useMemo(() => {
-    if (!file) {
+    if (!target_url) {
       return null;
     }
 
-    const url_result = safeUrl(file);
+    const url_result = safeUrl(target_url);
 
     if (!url_result.success) {
       return null;
     }
 
     return url_result.value;
-  }, [file]);
+  }, [target_url]);
 
   useEffect(() => {
     if (!url) {
