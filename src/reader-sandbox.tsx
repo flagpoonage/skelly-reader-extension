@@ -5,27 +5,69 @@ import { ReaderControls } from './reader/ReaderControls';
 import { ReaderContextProvider } from './reader/ReaderContext';
 import {
   createSandboxFrameReady,
+  isLinkActivateMessage,
   isSandboxInitialize,
 } from './reader/reader-messaging';
+import { useEffect, useState } from 'react';
 
-interface Props {
+interface PageState {
   html: string;
   auth_key: string;
   extension_id: string;
   target_url: string;
 }
 
-function Reader({ target_url, html, auth_key, extension_id }: Props) {
+function Reader() {
+  const [pageState, setPageState] = useState<PageState | null>();
+
+  useEffect(() => {
+    const handler = (ev: MessageEvent<unknown>) => {
+      if (isLinkActivateMessage(ev.data)) {
+        console.log('Received link activation message', ev.data);
+        if (
+          pageState?.auth_key !== ev.data.known_id ||
+          pageState.extension_id !== ev.data.ext_id
+        ) {
+          console.error('Doesnt match what we want');
+          return;
+        }
+
+        window.parent.postMessage(ev.data, window.location.origin);
+      }
+      if (ev.source !== window.parent) {
+        return;
+      }
+      3;
+
+      if (isSandboxInitialize(ev.data)) {
+        setPageState({
+          html: ev.data.html_string,
+          auth_key: ev.data.authkey,
+          extension_id: ev.data.extension_id,
+          target_url: ev.data.target_url,
+        });
+      }
+    };
+
+    window.addEventListener('message', handler);
+
+    return () => {
+      window.removeEventListener('message', handler);
+    };
+  }, [pageState]);
+
   return (
     <ReaderContextProvider>
       <div className="reader">
         <ReaderControls />
-        <ReaderContent
-          html={html}
-          target_url={target_url}
-          extension_id={extension_id}
-          auth_key={auth_key}
-        />
+        {pageState && (
+          <ReaderContent
+            html={pageState.html}
+            target_url={pageState.target_url}
+            extension_id={pageState.extension_id}
+            auth_key={pageState.auth_key}
+          />
+        )}
       </div>
     </ReaderContextProvider>
   );
@@ -33,25 +75,4 @@ function Reader({ target_url, html, auth_key, extension_id }: Props) {
 
 window.parent.postMessage(createSandboxFrameReady(), window.location.origin);
 
-window.addEventListener('message', (ev) => {
-  if (ev.source === window.parent) {
-    handleParentMessage(ev);
-  }
-});
-
-function handleParentMessage(ev: MessageEvent<unknown>) {
-  if (isSandboxInitialize(ev.data)) {
-    renderElement(
-      <Reader
-        html={ev.data.html_string}
-        auth_key={ev.data.authkey}
-        extension_id={ev.data.extension_id}
-        target_url={ev.data.target_url}
-      />,
-    );
-  }
-}
-
-// function handleMessage(ev: MessageEvent<unknown>) {}
-
-// renderElement(<Reader />);
+renderElement(<Reader />);

@@ -103,7 +103,7 @@ export function ReaderContent({
 
     if (url) {
       const base = strippedDocument.createElement('base');
-      base.href = url.origin;
+      base.href = url.href;
       head.prepend(base);
     }
 

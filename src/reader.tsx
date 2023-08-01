@@ -1,5 +1,6 @@
 import {
   createSandboxInitialize,
+  isLinkActivateMessage,
   isSandboxFrameReady,
 } from './reader/reader-messaging';
 import './reader/reader.css';
@@ -10,7 +11,7 @@ function createAuthKey() {
   return btoa(String.fromCharCode.apply(null, authkey as unknown as number[]));
 }
 
-const target_url = new URLSearchParams(window.location.search).get('read');
+const target_url = window.location.hash.substring(1);
 
 const callback_params = {
   authkey: createAuthKey(),
@@ -25,6 +26,29 @@ function onLoad() {
     console.log('Breaking', frame);
     return;
   }
+
+  window.addEventListener('hashchange', async () => {
+    const win = frame.contentWindow;
+
+    if (!win) {
+      console.log('No window to post to');
+      return;
+    }
+
+    const updated_url = window.location.hash.substring(1);
+
+    if (updated_url) {
+      const response = await chrome.runtime.sendMessage({
+        type: 'fetch',
+        url: updated_url,
+      });
+
+      win.postMessage(
+        createSandboxInitialize(updated_url, response, callback_params.authkey),
+        '*',
+      );
+    }
+  });
 
   window.addEventListener('message', (msg) => {
     const frame = document.getElementById(
@@ -45,6 +69,12 @@ function onLoad() {
 
     if (!win) {
       console.log('No window to post to');
+      return;
+    }
+
+    if (isLinkActivateMessage(data)) {
+      console.log('Received link activation at top level!', data);
+      window.location.href = `${window.location.origin}${window.location.pathname}#${data.link_href}`;
       return;
     }
 

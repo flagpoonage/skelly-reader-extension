@@ -47,3 +47,27 @@ export function createSandboxInitialize(
     extension_id: chrome.runtime.id,
   };
 }
+
+export const linkActivateMessageSchema = v.object().schema({
+  ext_id: v.string(),
+  known_id: v.string(),
+  type: v.string().equals('link_activate'),
+  link_href: v.string(),
+});
+
+export type LinkActivateMessage = ValidatorFunctionResultType<
+  typeof linkActivateMessageSchema
+>;
+
+export const isLinkActivateMessage = makeTypeAssertion(
+  linkActivateMessageSchema,
+);
+
+export function createLinkActivateMessage(
+  msg: Omit<LinkActivateMessage, 'type'>,
+): LinkActivateMessage {
+  return {
+    ...msg,
+    type: 'link_activate',
+  };
+}
