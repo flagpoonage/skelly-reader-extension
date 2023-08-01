@@ -36,15 +36,17 @@ await fs.writeFile(
   'utf-8',
 );
 
-execSync(
-  `cp ${path.join(__sourcedir, 'popup/popup.html')} ${path.join(
-    __sourcedir,
+function getHtmlPages() {
+  return [
+    'popup/popup.html',
     'app/app.html',
-  )} ${path.join(__sourcedir, 'reader/reader.html')} ${path.join(
-    __sourcedir,
+    'reader/reader.html',
+    'reader/reader-sandbox.html',
     'crypto/crypto.html',
-  )} ${__builddir}`,
-);
+  ].map((a) => path.join(__sourcedir, a));
+}
+
+execSync(`cp ${getHtmlPages().join(' ')} ${__builddir}`);
 
 execSync(
   `cp -rf ${path.join(__sourcedir, './themes')} ${path.join(
@@ -60,6 +62,7 @@ const ctx = await esbuild.context({
     path.join(__sourcedir, './app.tsx'),
     path.join(__sourcedir, './crypto.tsx'),
     path.join(__sourcedir, './reader.tsx'),
+    path.join(__sourcedir, './reader-sandbox.tsx'),
     path.join(__sourcedir, './injected-scripts/links.ts'),
   ],
   sourcemap: 'inline',

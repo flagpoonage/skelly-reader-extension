@@ -19,7 +19,7 @@ function Popup() {
     const first_tab_id = tabs?.[0]?.id;
 
     if (typeof first_tab_id !== 'number') {
-      chrome.tabs.create({ url: `${app}?read=${active_tab.url}` });
+      chrome.tabs.create({ url: `${app}#${active_tab.url}` });
     } else {
       chrome.tabs.update(first_tab_id, {
         active: true,

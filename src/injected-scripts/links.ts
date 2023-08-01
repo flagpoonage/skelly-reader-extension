@@ -6,18 +6,20 @@ function clickHandler(e: MouseEvent) {
   }
 
   const target = e.target;
+  e.preventDefault();
 
   if (!(target instanceof HTMLAnchorElement)) {
     return;
   }
 
-  window.postMessage(
+  window.parent.postMessage(
     {
+      ext_id: InjectedWindow.__EXTENSION_ID,
       known_id: InjectedWindow.__KNOWN_IDENTIFIER,
       type: 'link_activate',
       link_href: target.href,
     },
-    `chrome-extension://${InjectedWindow.__EXTENSION_ID}`,
+    `*`,
   );
 }
 
