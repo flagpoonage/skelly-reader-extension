@@ -19,6 +19,7 @@ export function ReaderControls() {
           <option value="esbuild">ESBuild</option>
           <option value="webpack">Webpack</option>
           <option value="overreacted">Overreacted</option>
+          <option value="rust">Rust</option>
         </select>
       </div>
     </footer>
