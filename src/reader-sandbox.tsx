@@ -9,15 +9,23 @@ import {
 } from './reader/reader-messaging';
 
 interface Props {
+  html: string;
+  auth_key: string;
+  extension_id: string;
   target_url: string;
 }
 
-function Reader({ target_url }: Props) {
+function Reader({ target_url, html, auth_key, extension_id }: Props) {
   return (
     <ReaderContextProvider>
       <div className="reader">
         <ReaderControls />
-        <ReaderContent target_url={target_url} />
+        <ReaderContent
+          html={html}
+          target_url={target_url}
+          extension_id={extension_id}
+          auth_key={auth_key}
+        />
       </div>
     </ReaderContextProvider>
   );
@@ -33,7 +41,14 @@ window.addEventListener('message', (ev) => {
 
 function handleParentMessage(ev: MessageEvent<unknown>) {
   if (isSandboxInitialize(ev.data)) {
-    renderElement(<Reader target_url={ev.data.target_url} />);
+    renderElement(
+      <Reader
+        html={ev.data.html_string}
+        auth_key={ev.data.authkey}
+        extension_id={ev.data.extension_id}
+        target_url={ev.data.target_url}
+      />,
+    );
   }
 }
 

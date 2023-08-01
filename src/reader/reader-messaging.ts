@@ -23,7 +23,9 @@ export function createSandboxFrameReady(): SandboxFrameReady {
 export const sandboxInitializeSchema = v.object().schema({
   type: v.string().equals('initialize'),
   target_url: v.string(),
+  html_string: v.string(),
   authkey: v.string(),
+  extension_id: v.string(),
 });
 
 export type SandboxInitialize = ValidatorFunctionResultType<
@@ -34,11 +36,14 @@ export const isSandboxInitialize = makeTypeAssertion(sandboxInitializeSchema);
 
 export function createSandboxInitialize(
   target_url: string,
+  html_string: string,
   authkey: string,
 ): SandboxInitialize {
   return {
     type: 'initialize',
+    html_string,
     target_url,
     authkey,
+    extension_id: chrome.runtime.id,
   };
 }

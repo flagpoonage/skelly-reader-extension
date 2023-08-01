@@ -1,14 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
 
 interface Props {
+  html: string;
+  auth_key: string;
+  extension_id: string;
   target_url: string | null;
 }
 
-export function ReaderContent({ target_url }: Props) {
+export function ReaderContent({
+  html,
+  target_url,
+  extension_id,
+  auth_key,
+}: Props) {
   const { selectedTheme } = useReaderContext();
-  const [originalSource, setOriginalSource] = useState<string | null>(null);
   const url = useMemo(() => {
     if (!target_url) {
       return null;
@@ -23,28 +30,28 @@ export function ReaderContent({ target_url }: Props) {
     return url_result.value;
   }, [target_url]);
 
-  useEffect(() => {
-    if (!url) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!url) {
+  //     return;
+  //   }
 
-    (async () => {
-      const response = await chrome.runtime.sendMessage({
-        type: 'fetch',
-        url: url,
-      });
+  //   (async () => {
+  //     const response = await chrome.runtime.sendMessage({
+  //       type: 'fetch',
+  //       url: url,
+  //     });
 
-      setOriginalSource(response);
-    })();
-  }, [url]);
+  //     setOriginalSource(response);
+  //   })();
+  // }, [url]);
 
   const strippedDocument = useMemo(() => {
-    if (!originalSource) {
+    if (!html) {
       return;
     }
 
     const parser = new DOMParser();
-    const body_document = parser.parseFromString(originalSource, 'text/html');
+    const body_document = parser.parseFromString(html, 'text/html');
 
     Array.from(
       body_document.querySelectorAll(
@@ -74,7 +81,7 @@ export function ReaderContent({ target_url }: Props) {
     });
 
     return body_document;
-  }, [originalSource]);
+  }, [html]);
 
   const documentString = useMemo(() => {
     if (!strippedDocument) {
@@ -88,7 +95,7 @@ export function ReaderContent({ target_url }: Props) {
     const head = strippedDocument.getElementsByTagName('head')[0];
     if (selectedTheme) {
       const style = strippedDocument.createElement('link');
-      style.href = chrome.runtime.getURL(`themes/${selectedTheme}.css`);
+      style.href = `chrome-extension://${extension_id}/themes/${selectedTheme}.css`;
       style.rel = 'stylesheet';
 
       head.appendChild(style);
@@ -112,9 +119,7 @@ export function ReaderContent({ target_url }: Props) {
 
     const window_script = strippedDocument.createElement('script');
 
-    window_script.innerHTML = `window.__EXTENSION_ID = ${
-      chrome.runtime.id
-    }; window.__KNOWN_IDENTIFIER = ${crypto.randomUUID()};`;
+    window_script.innerHTML = `window.__EXTENSION_ID = '${extension_id}'; window.__KNOWN_IDENTIFIER = '${auth_key}';`;
 
     // window_script.nonce = 'nonced';
     // window_script.setAttribute('nonce', 'nonced');
@@ -122,7 +127,7 @@ export function ReaderContent({ target_url }: Props) {
     head.appendChild(window_script);
 
     const link_script = strippedDocument.createElement('script');
-    link_script.src = `chrome-extension://${chrome.runtime.id}/injected-scripts/links.js`;
+    link_script.src = `chrome-extension://${extension_id}/injected-scripts/links.js`;
 
     head.appendChild(link_script);
 
@@ -131,7 +136,7 @@ export function ReaderContent({ target_url }: Props) {
     const doc_string = sx.serializeToString(strippedDocument);
 
     return doc_string;
-  }, [strippedDocument, selectedTheme, url]);
+  }, [strippedDocument, selectedTheme, url, extension_id, auth_key]);
 
   return (
     <div className="reader-content">
