@@ -1,3 +1,4 @@
+import { extension } from './extension';
 import {
   createSandboxInitialize,
   isLinkActivateMessage,
@@ -38,7 +39,7 @@ function onLoad() {
     const updated_url = window.location.hash.substring(1);
 
     if (updated_url) {
-      const response = await chrome.runtime.sendMessage({
+      const response = await extension.runtime.sendMessage({
         type: 'fetch',
         url: updated_url,
       });
@@ -82,7 +83,7 @@ function onLoad() {
       console.log('Sandbox is ready', data);
 
       if (target_url) {
-        const response = await chrome.runtime.sendMessage({
+        const response = await extension.runtime.sendMessage({
           type: 'fetch',
           url: target_url,
         });

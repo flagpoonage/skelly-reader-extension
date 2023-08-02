@@ -3,6 +3,7 @@ import {
   DW as v,
   ValidatorFunctionResultType,
 } from 'dealwith';
+import { extension } from '../extension';
 
 export const sandboxFrameReadySchema = v.object().schema({
   type: v.string().equals('ready'),
@@ -44,7 +45,7 @@ export function createSandboxInitialize(
     html_string,
     target_url,
     authkey,
-    extension_id: chrome.runtime.id,
+    extension_id: extension.runtime.id,
   };
 }
 

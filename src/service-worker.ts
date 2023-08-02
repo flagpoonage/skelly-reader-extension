@@ -67,7 +67,7 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse(a);
   });
 
-  return true;
+  // return true;
 });
 
 extension.tabs.onCreated.addListener((tab) => {

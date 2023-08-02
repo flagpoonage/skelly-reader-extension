@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node ./scripts/dev.mjs",
+    "dev:ff": "node ./scripts/dev.mjs --target=firefox",
     "build": "node ./scripts/build.mjs"
   },
   "author": "https://skelly.jamesh.me/jamesh.skellyauthor",

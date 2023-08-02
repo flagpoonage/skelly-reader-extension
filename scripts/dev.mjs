@@ -4,6 +4,10 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 
+const target = process.argv
+  .find((a) => a.startsWith('--target='))
+  ?.split('--target=')[1];
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __rootdir = path.join(__dirname, '../');
 const __builddir = path.join(__rootdir, './dist');
@@ -29,6 +33,11 @@ manifest_json.version = package_json.version;
 manifest_json.name = package_json.displayName;
 manifest_json.author = package_json.author;
 manifest_json.description = package_json.description;
+
+if (target === 'firefox') {
+  manifest_json.background.scripts = [manifest_json.background.service_worker];
+  delete manifest_json.background.service_worker;
+}
 
 await fs.writeFile(
   path.join(__builddir, 'manifest.json'),
