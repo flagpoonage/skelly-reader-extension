@@ -27,11 +27,14 @@ function Popup() {
     }
   };
   return (
-    <div>
+    <div className='main-wrapper'>
+      <div className="text-3xl font-bold underline">
+        Hello world!
+      </div> <br/>
       <button onClick={onClick}>Open App</button>
       <button
         onClick={() =>
-          chrome.tabs.create({ url: `${chrome.runtime.getURL('crypto.html')}` })
+          chrome.tabs.create({url: `${chrome.runtime.getURL('crypto.html')}`})
         }
       >
         Open Crypto
@@ -40,4 +43,4 @@ function Popup() {
   );
 }
 
-renderElement(<Popup />);
+renderElement(<Popup/>);

@@ -13,3 +13,8 @@ button {
   background-color: transparent;
   border-radius: 5px;
 }
+
+.main-wrapper {
+    width: 300px;
+    height: 350px;
+}
