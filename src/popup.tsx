@@ -43,7 +43,9 @@ function Popup() {
         <Toggle text='Load images'/>
         <Toggle text='Load videos'/>
         <div className='flex justify-between'>
-          <Button onClick={onClick} className='bg-emerald-900 text-white'>Open App</Button>
+          <Button onClick={onClick} className='bg-emerald-900 text-white'>
+            View in Skelly
+          </Button>
           <Button
             className='bg-emerald-300'
             onClick={() =>
