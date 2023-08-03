@@ -5,6 +5,7 @@ import { ReaderControls } from './reader/ReaderControls';
 import { ReaderContextProvider } from './reader/ReaderContext';
 import {
   createSandboxFrameReady,
+  isAnchorActivateMessage,
   isLinkActivateMessage,
   isSandboxInitialize,
 } from './reader/reader-messaging';
@@ -12,7 +13,6 @@ import { useEffect, useState } from 'react';
 
 interface PageState {
   html: string;
-  auth_key: string;
   extension_id: string;
   target_url: string;
 }
@@ -34,15 +34,19 @@ function Reader() {
 
         window.parent.postMessage(ev.data, window.location.origin);
       }
+
+      if (isAnchorActivateMessage(ev.data)) {
+        console.log('Received anchor activation message', ev.data);
+        window.parent.postMessage(ev.data, window.location.origin);
+      }
+
       if (ev.source !== window.parent) {
         return;
       }
-      3;
 
       if (isSandboxInitialize(ev.data)) {
         setPageState({
           html: ev.data.html_string,
-          auth_key: ev.data.authkey,
           extension_id: ev.data.extension_id,
           target_url: ev.data.target_url,
         });
@@ -65,7 +69,6 @@ function Reader() {
             html={pageState.html}
             target_url={pageState.target_url}
             extension_id={pageState.extension_id}
-            auth_key={pageState.auth_key}
           />
         )}
       </div>

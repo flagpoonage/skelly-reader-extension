@@ -63,6 +63,19 @@ export const isLinkActivateMessage = makeTypeAssertion(
   linkActivateMessageSchema,
 );
 
+export const anchorActivateMessageSchema = v.object().schema({
+  type: v.string().equals('anchor_activate'),
+  anchor_name: v.string(),
+});
+
+export type AnchorActivateMessage = ValidatorFunctionResultType<
+  typeof anchorActivateMessageSchema
+>;
+
+export const isAnchorActivateMessage = makeTypeAssertion(
+  anchorActivateMessageSchema,
+);
+
 export function createLinkActivateMessage(
   msg: Omit<LinkActivateMessage, 'type'>,
 ): LinkActivateMessage {

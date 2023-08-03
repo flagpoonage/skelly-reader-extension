@@ -1,6 +1,7 @@
 import { extension } from './extension';
 import {
   createSandboxInitialize,
+  isAnchorActivateMessage,
   isLinkActivateMessage,
   isSandboxFrameReady,
 } from './reader/reader-messaging';
@@ -77,6 +78,19 @@ function onLoad() {
       console.log('Received link activation at top level!', data);
       window.location.href = `${window.location.origin}${window.location.pathname}#${data.link_href}`;
       return;
+    }
+
+    if (isAnchorActivateMessage(data)) {
+      console.log(
+        'Current hash',
+        window.location.hash,
+        window.location.hash.split('#')[0],
+      );
+      history.pushState(
+        null,
+        '',
+        `${window.location.hash.split('#')[0]}#${data.anchor_name}`,
+      );
     }
 
     if (isSandboxFrameReady(data)) {

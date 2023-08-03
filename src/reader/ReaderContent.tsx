@@ -4,19 +4,13 @@ import { useReaderContext } from './ReaderContext';
 
 interface Props {
   html: string;
-  auth_key: string;
   extension_id: string;
   target_url: string | null;
 }
 
 const ext_scheme = TARGET === 'firefox' ? 'moz-extension' : 'chrome-extension';
 
-export function ReaderContent({
-  html,
-  target_url,
-  extension_id,
-  auth_key,
-}: Props) {
+export function ReaderContent({ html, target_url, extension_id }: Props) {
   const { selectedTheme } = useReaderContext();
   const url = useMemo(() => {
     if (!target_url) {
@@ -57,12 +51,9 @@ export function ReaderContent({
 
     Array.from(
       body_document.querySelectorAll(
-        'link[rel=stylesheet], link[rel=preload], video, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
+        'link[rel=stylesheet], link[rel=preload], button, input, textarea, dialog, video, canvas, style, script, link[rel=preconnect], a[href="javascript:void(0)"',
       ),
-    ).forEach((el) => {
-      // console.log('Stripping non-compliant element', el);
-      el.remove();
-    });
+    ).forEach((el) => el.remove());
 
     Array.from(body_document.querySelectorAll('a[href^="#"]')).forEach((a) => {
       const href = a.getAttribute('href');
@@ -70,7 +61,9 @@ export function ReaderContent({
     });
 
     Array.from(body_document.getElementsByTagName('img')).forEach((el) => {
-      // console.log('Replacing image with marker', el);
+      if (el.src.startsWith('data:')) {
+        return;
+      }
       const anchor = body_document.createElement('a');
       anchor.setAttribute('skelly-image', el.src);
       anchor.innerHTML = el.src;
@@ -78,7 +71,6 @@ export function ReaderContent({
     });
 
     Array.from(body_document.querySelectorAll('[style]')).forEach((el) => {
-      // console.log('Stripping inline style', el.getAttribute('style'), el);
       el.removeAttribute('style');
     });
 
@@ -138,7 +130,7 @@ export function ReaderContent({
     const doc_string = sx.serializeToString(strippedDocument);
 
     return doc_string;
-  }, [strippedDocument, selectedTheme, url, extension_id, auth_key]);
+  }, [strippedDocument, selectedTheme, url, extension_id]);
 
   return (
     <div className="reader-content">
