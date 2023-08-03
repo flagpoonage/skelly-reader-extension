@@ -1,26 +1,62 @@
 // import { InjectedWindow } from './window';
 
+function findLinkParent(target: Node | Element): HTMLAnchorElement | null {
+  const parent = target.parentElement;
+
+  if (!parent) {
+    return null;
+  }
+
+  if (parent.tagName === 'A') {
+    return parent as HTMLAnchorElement;
+  }
+
+  return findLinkParent(parent);
+}
+
 function clickHandler(e: MouseEvent) {
   if (!e.target) {
     return;
   }
 
   const target = e.target;
-  e.preventDefault();
 
-  if (!(target instanceof HTMLAnchorElement)) {
+  const link =
+    target instanceof HTMLAnchorElement
+      ? target
+      : findLinkParent(target as Node | Element);
+
+  if (!link) {
     return;
   }
 
-  window.parent.postMessage(
-    {
-      // ext_id: InjectedWindow.__EXTENSION_ID,
-      // known_id: InjectedWindow.__KNOWN_IDENTIFIER,
-      type: 'link_activate',
-      link_href: target.href,
-    },
-    `*`,
-  );
+  const href = link.href;
+
+  if (!href) {
+    return;
+  }
+
+  if (!href.startsWith('about:srcdoc#')) {
+    e.preventDefault();
+
+    window.parent.postMessage(
+      {
+        // ext_id: InjectedWindow.__EXTENSION_ID,
+        // known_id: InjectedWindow.__KNOWN_IDENTIFIER,
+        type: 'link_activate',
+        link_href: href,
+      },
+      `*`,
+    );
+  } else {
+    window.parent.postMessage(
+      {
+        type: 'anchor_activate',
+        anchor_name: href.split('about:srcdoc#')[1],
+      },
+      '*',
+    );
+  }
 }
 
 function onLoad() {
