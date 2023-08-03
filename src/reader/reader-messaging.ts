@@ -3,7 +3,6 @@ import {
   DW as v,
   ValidatorFunctionResultType,
 } from 'dealwith';
-import { extension } from '../extension';
 
 export const sandboxFrameReadySchema = v.object().schema({
   type: v.string().equals('ready'),
@@ -45,13 +44,13 @@ export function createSandboxInitialize(
     html_string,
     target_url,
     authkey,
-    extension_id: extension.runtime.id,
+    extension_id: window.location.hostname,
   };
 }
 
 export const linkActivateMessageSchema = v.object().schema({
-  ext_id: v.string(),
-  known_id: v.string(),
+  // ext_id: v.string(),
+  // known_id: v.string(),
   type: v.string().equals('link_activate'),
   link_href: v.string(),
 });

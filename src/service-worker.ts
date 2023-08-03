@@ -67,7 +67,7 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse(a);
   });
 
-  // return true;
+  return true;
 });
 
 extension.tabs.onCreated.addListener((tab) => {
@@ -90,7 +90,7 @@ extension.tabs.onCreated.addListener((tab) => {
   }
 
   extension.tabs.update(tab_id, {
-    url: `${extension.runtime.getURL('reader.html')}?read=${url.href}`,
+    url: `${extension.runtime.getURL('reader.html')}#${url.href}`,
   });
 });
 
@@ -112,7 +112,7 @@ extension.tabs.onUpdated.addListener((tabId, info) => {
   }
 
   extension.tabs.update(tabId, {
-    url: `${extension.runtime.getURL('reader.html')}?read=${url.href}`,
+    url: `${extension.runtime.getURL('reader.html')}#${url.href}`,
   });
 });
 

@@ -9,6 +9,8 @@ interface Props {
   target_url: string | null;
 }
 
+const ext_scheme = TARGET === 'firefox' ? 'moz-extension' : 'chrome-extension';
+
 export function ReaderContent({
   html,
   target_url,
@@ -95,7 +97,7 @@ export function ReaderContent({
     const head = strippedDocument.getElementsByTagName('head')[0];
     if (selectedTheme) {
       const style = strippedDocument.createElement('link');
-      style.href = `chrome-extension://${extension_id}/themes/${selectedTheme}.css`;
+      style.href = `${ext_scheme}://${extension_id}/themes/${selectedTheme}.css`;
       style.rel = 'stylesheet';
 
       head.appendChild(style);
@@ -117,17 +119,17 @@ export function ReaderContent({
     csp_header.content = "script-src 'unsafe-inline'";
     head.append(csp_header);
 
-    const window_script = strippedDocument.createElement('script');
+    // const window_script = strippedDocument.createElement('script');
 
-    window_script.innerHTML = `window.__EXTENSION_ID = '${extension_id}'; window.__KNOWN_IDENTIFIER = '${auth_key}';`;
+    // window_script.innerHTML = `window.__EXTENSION_ID = '${extension_id}'; window.__KNOWN_IDENTIFIER = '${auth_key}';`;
 
     // window_script.nonce = 'nonced';
     // window_script.setAttribute('nonce', 'nonced');
 
-    head.appendChild(window_script);
+    // head.appendChild(window_script);
 
     const link_script = strippedDocument.createElement('script');
-    link_script.src = `chrome-extension://${extension_id}/injected-scripts/links.js`;
+    link_script.src = `${ext_scheme}://${extension_id}/injected-scripts/links.js`;
 
     head.appendChild(link_script);
 

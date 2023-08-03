@@ -83,18 +83,21 @@ function onLoad() {
       console.log('Sandbox is ready', data);
 
       if (target_url) {
-        const response = await extension.runtime.sendMessage({
-          type: 'fetch',
-          url: target_url,
-        });
-
-        win.postMessage(
-          createSandboxInitialize(
-            target_url,
-            response,
-            callback_params.authkey,
-          ),
-          '*',
+        extension.runtime.sendMessage(
+          {
+            type: 'fetch',
+            url: target_url,
+          },
+          (response) => {
+            win.postMessage(
+              createSandboxInitialize(
+                target_url,
+                response,
+                callback_params.authkey,
+              ),
+              '*',
+            );
+          },
         );
       }
     }

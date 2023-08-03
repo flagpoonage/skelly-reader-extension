@@ -1,4 +1,4 @@
-import { InjectedWindow } from './window';
+// import { InjectedWindow } from './window';
 
 function clickHandler(e: MouseEvent) {
   if (!e.target) {
@@ -14,8 +14,8 @@ function clickHandler(e: MouseEvent) {
 
   window.parent.postMessage(
     {
-      ext_id: InjectedWindow.__EXTENSION_ID,
-      known_id: InjectedWindow.__KNOWN_IDENTIFIER,
+      // ext_id: InjectedWindow.__EXTENSION_ID,
+      // known_id: InjectedWindow.__KNOWN_IDENTIFIER,
       type: 'link_activate',
       link_href: target.href,
     },

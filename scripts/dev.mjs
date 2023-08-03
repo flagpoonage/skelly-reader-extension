@@ -79,6 +79,9 @@ const ctx = await esbuild.context({
   format: 'esm',
   platform: 'browser',
   bundle: true,
+  define: {
+    TARGET: target === 'firefox' ? '"firefox"' : '"chrome"',
+  },
 });
 
 ctx.watch();

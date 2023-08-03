@@ -24,13 +24,13 @@ function Reader() {
     const handler = (ev: MessageEvent<unknown>) => {
       if (isLinkActivateMessage(ev.data)) {
         console.log('Received link activation message', ev.data);
-        if (
-          pageState?.auth_key !== ev.data.known_id ||
-          pageState.extension_id !== ev.data.ext_id
-        ) {
-          console.error('Doesnt match what we want');
-          return;
-        }
+        // if (
+        //   pageState?.auth_key !== ev.data.known_id ||
+        //   pageState.extension_id !== ev.data.ext_id
+        // ) {
+        //   console.error('Doesnt match what we want');
+        //   return;
+        // }
 
         window.parent.postMessage(ev.data, window.location.origin);
       }
