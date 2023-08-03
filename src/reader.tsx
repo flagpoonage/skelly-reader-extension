@@ -85,11 +85,14 @@ function onLoad() {
         'Current hash',
         window.location.hash,
         window.location.hash.split('#')[0],
+        window.location.hash.split('#')[1],
       );
       history.pushState(
         null,
         '',
-        `${window.location.hash.split('#')[0]}#${data.anchor_name}`,
+        `${window.location.origin}${window.location.pathname}#${
+          window.location.hash.split('#')[1]
+        }#${data.anchor_name}`,
       );
     }
 
