@@ -48,6 +48,22 @@ export function createSandboxInitialize(
   };
 }
 
+export const hashChangeSchema = v.object().schema({
+  type: v.string().equals('hashchange'),
+  new_hash: v.string(),
+});
+
+export type HashChange = ValidatorFunctionResultType<typeof hashChangeSchema>;
+
+export const isHashChange = makeTypeAssertion(hashChangeSchema);
+
+export function createHashChange(new_hash: string): HashChange {
+  return {
+    type: 'hashchange',
+    new_hash,
+  };
+}
+
 export const linkActivateMessageSchema = v.object().schema({
   // ext_id: v.string(),
   // known_id: v.string(),
@@ -69,5 +85,43 @@ export function createLinkActivateMessage(
   return {
     ...msg,
     type: 'link_activate',
+  };
+}
+
+export const anchorActivateMessageSchema = v.object().schema({
+  type: v.string().equals('anchor_activate'),
+  anchor_name: v.string(),
+});
+
+export type AnchorActivateMessage = ValidatorFunctionResultType<
+  typeof anchorActivateMessageSchema
+>;
+
+export const isAnchorActivateMessage = makeTypeAssertion(
+  anchorActivateMessageSchema,
+);
+
+export function createAnchorActivateMessage(
+  anchor_name: string,
+): AnchorActivateMessage {
+  return {
+    type: 'anchor_activate',
+    anchor_name,
+  };
+}
+
+export const frameContentReadySchema = v.object().schema({
+  type: v.string().equals('frame_content_ready'),
+});
+
+export type FrameContentReady = ValidatorFunctionResultType<
+  typeof frameContentReadySchema
+>;
+
+export const isFrameContentReady = makeTypeAssertion(frameContentReadySchema);
+
+export function createFrameContentReady(): FrameContentReady {
+  return {
+    type: 'frame_content_ready',
   };
 }

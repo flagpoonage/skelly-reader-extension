@@ -63,7 +63,7 @@ extension.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return text;
     }
   })().then((a) => {
-    console.log('Sending response', a);
+    console.log('Sending response');
     sendResponse(a);
   });
 
