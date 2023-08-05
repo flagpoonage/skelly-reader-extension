@@ -1,5 +1,6 @@
 import { extension } from './extension';
 import {
+  createHashChange,
   createSandboxInitialize,
   isAnchorActivateMessage,
   isLinkActivateMessage,
@@ -29,7 +30,7 @@ function onLoad() {
     return;
   }
 
-  window.addEventListener('hashchange', async () => {
+  window.addEventListener('hashchange', async (ev) => {
     const win = frame.contentWindow;
 
     if (!win) {
@@ -37,18 +38,37 @@ function onLoad() {
       return;
     }
 
-    const updated_url = window.location.hash.substring(1);
+    console.log(ev.newURL, ev.oldURL);
 
-    if (updated_url) {
-      const response = await extension.runtime.sendMessage({
-        type: 'fetch',
-        url: updated_url,
-      });
+    const new_url = new URL(new URL(ev.newURL).hash.substring(1));
+    const old_url = new URL(new URL(ev.oldURL).hash.substring(1));
 
-      win.postMessage(
-        createSandboxInitialize(updated_url, response, callback_params.authkey),
-        '*',
-      );
+    console.log(new_url, old_url);
+
+    if (
+      new_url.origin === old_url.origin &&
+      new_url.pathname === old_url.pathname
+    ) {
+      win.postMessage(createHashChange(new_url.hash), '*');
+      // Don't load a new page, because it's just the anchor that's changing.
+    } else {
+      const updated_url = window.location.hash.substring(1);
+
+      if (updated_url) {
+        const response = await extension.runtime.sendMessage({
+          type: 'fetch',
+          url: updated_url,
+        });
+
+        win.postMessage(
+          createSandboxInitialize(
+            updated_url,
+            response,
+            callback_params.authkey,
+          ),
+          '*',
+        );
+      }
     }
   });
 

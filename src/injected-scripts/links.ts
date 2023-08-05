@@ -1,5 +1,10 @@
 // import { InjectedWindow } from './window';
 
+import {
+  createAnchorActivateMessage,
+  createLinkActivateMessage,
+} from '../reader/reader-messaging';
+
 function findLinkParent(target: Node | Element): HTMLAnchorElement | null {
   const parent = target.parentElement;
 
@@ -40,22 +45,25 @@ function clickHandler(e: MouseEvent) {
     e.preventDefault();
 
     window.parent.postMessage(
-      {
-        // ext_id: InjectedWindow.__EXTENSION_ID,
-        // known_id: InjectedWindow.__KNOWN_IDENTIFIER,
-        type: 'link_activate',
-        link_href: href,
-      },
+      createLinkActivateMessage({ link_href: href }),
       `*`,
     );
   } else {
-    window.parent.postMessage(
-      {
-        type: 'anchor_activate',
-        anchor_name: href.split('about:srcdoc#')[1],
-      },
-      '*',
-    );
+    // This fucks with history if we allow the link to actually activate,
+    // so it's simulating by scrolling the target anchor into view and telling
+    // the extension to update it's URL.
+    e.preventDefault();
+    const anchor_name = href.split('about:srcdoc#')[1];
+
+    const el = document.getElementById(anchor_name);
+
+    if (!el) {
+      return;
+    }
+
+    el.scrollIntoView(true);
+
+    window.parent.postMessage(createAnchorActivateMessage(anchor_name), '*');
   }
 }
 

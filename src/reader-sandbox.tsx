@@ -2,14 +2,21 @@ import './reader/reader-sandbox.css';
 import { renderElement } from './page-renderer';
 import { ReaderContent } from './reader/ReaderContent';
 import { ReaderControls } from './reader/ReaderControls';
-import { ReaderContextProvider } from './reader/ReaderContext';
 import {
+  ReaderContextProvider,
+  useReaderContext,
+} from './reader/ReaderContext';
+import {
+  createHashChange,
   createSandboxFrameReady,
   isAnchorActivateMessage,
+  isFrameContentReady,
+  isHashChange,
   isLinkActivateMessage,
   isSandboxInitialize,
 } from './reader/reader-messaging';
 import { useEffect, useState } from 'react';
+import { safeUrl } from './common/safe-url';
 
 interface PageState {
   html: string;
@@ -19,6 +26,7 @@ interface PageState {
 
 function Reader() {
   const [pageState, setPageState] = useState<PageState | null>();
+  const ctx = useReaderContext();
 
   useEffect(() => {
     const handler = (ev: MessageEvent<unknown>) => {
@@ -40,8 +48,44 @@ function Reader() {
         window.parent.postMessage(ev.data, window.location.origin);
       }
 
+      if (isFrameContentReady(ev.data)) {
+        console.log(
+          'Got frame content acknowledgement',
+          window.location,
+          pageState?.target_url,
+        );
+
+        if (!pageState?.target_url) {
+          console.error('Missing a target URL for some reason, this is a bug');
+          return;
+        }
+
+        const url = safeUrl(pageState.target_url);
+
+        if (!url.success) {
+          console.error(
+            'Bad target URL for some reason, this is a bug',
+            url.error,
+            pageState.target_url,
+          );
+          return;
+        }
+
+        if (!url.value.hash) {
+          return;
+        }
+
+        ctx.sendMessageToFrame(createHashChange(url.value.hash));
+      }
+
       if (ev.source !== window.parent) {
         return;
+      }
+
+      if (isHashChange(ev.data)) {
+        console.log('Received a message bound for the internal frame', ev.data);
+
+        ctx.sendMessageToFrame(ev.data);
       }
 
       if (isSandboxInitialize(ev.data)) {
@@ -58,24 +102,26 @@ function Reader() {
     return () => {
       window.removeEventListener('message', handler);
     };
-  }, [pageState]);
+  }, [pageState, ctx]);
 
   return (
-    <ReaderContextProvider>
-      <div className="reader">
-        <ReaderControls />
-        {pageState && (
-          <ReaderContent
-            html={pageState.html}
-            target_url={pageState.target_url}
-            extension_id={pageState.extension_id}
-          />
-        )}
-      </div>
-    </ReaderContextProvider>
+    <div className="reader">
+      <ReaderControls />
+      {pageState && (
+        <ReaderContent
+          html={pageState.html}
+          target_url={pageState.target_url}
+          extension_id={pageState.extension_id}
+        />
+      )}
+    </div>
   );
 }
 
 window.parent.postMessage(createSandboxFrameReady(), window.location.origin);
 
-renderElement(<Reader />);
+renderElement(
+  <ReaderContextProvider>
+    <Reader />
+  </ReaderContextProvider>,
+);

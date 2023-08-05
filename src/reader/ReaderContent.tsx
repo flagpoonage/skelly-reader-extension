@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
 
@@ -10,8 +10,18 @@ interface Props {
 
 const ext_scheme = TARGET === 'firefox' ? 'moz-extension' : 'chrome-extension';
 
+const keyCount = (function* keyCounter() {
+  let i = 1;
+  while (i < 10000000) {
+    yield i;
+    i++;
+  }
+
+  return null;
+})();
+
 export function ReaderContent({ html, target_url, extension_id }: Props) {
-  const { selectedTheme } = useReaderContext();
+  const { selectedTheme, contentFrameReference } = useReaderContext();
   const url = useMemo(() => {
     if (!target_url) {
       return null;
@@ -25,21 +35,6 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
 
     return url_result.value;
   }, [target_url]);
-
-  // useEffect(() => {
-  //   if (!url) {
-  //     return;
-  //   }
-
-  //   (async () => {
-  //     const response = await chrome.runtime.sendMessage({
-  //       type: 'fetch',
-  //       url: url,
-  //     });
-
-  //     setOriginalSource(response);
-  //   })();
-  // }, [url]);
 
   const strippedDocument = useMemo(() => {
     if (!html) {
@@ -57,7 +52,12 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
 
     Array.from(body_document.querySelectorAll('a[href^="#"]')).forEach((a) => {
       const href = a.getAttribute('href');
-      a.setAttribute('href', `about:srcdoc${href}`);
+
+      if (href === '#') {
+        a.removeAttribute('href');
+      } else {
+        a.setAttribute('href', `about:srcdoc${href}`);
+      }
     });
 
     Array.from(body_document.getElementsByTagName('img')).forEach((el) => {
@@ -101,29 +101,20 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
       head.prepend(base);
     }
 
-    // <meta
-    //   http-equiv="Content-Security-Policy"
-    //   content="default-src 'self'; img-src https://*; child-src 'none';"
-    // />;
-
     const csp_header = strippedDocument.createElement('meta');
     csp_header.httpEquiv = 'Content-Security-Policy';
     csp_header.content = "script-src 'unsafe-inline'";
     head.append(csp_header);
 
-    // const window_script = strippedDocument.createElement('script');
-
-    // window_script.innerHTML = `window.__EXTENSION_ID = '${extension_id}'; window.__KNOWN_IDENTIFIER = '${auth_key}';`;
-
-    // window_script.nonce = 'nonced';
-    // window_script.setAttribute('nonce', 'nonced');
-
-    // head.appendChild(window_script);
-
     const link_script = strippedDocument.createElement('script');
     link_script.src = `${ext_scheme}://${extension_id}/injected-scripts/links.js`;
 
     head.appendChild(link_script);
+
+    const window_script = strippedDocument.createElement('script');
+    window_script.src = `${ext_scheme}://${extension_id}/injected-scripts/window.js`;
+
+    head.appendChild(window_script);
 
     const sx = new XMLSerializer();
 
@@ -132,10 +123,19 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
     return doc_string;
   }, [strippedDocument, selectedTheme, url, extension_id]);
 
+  useEffect(() => {});
+
+  const content_id = useMemo(() => keyCount.next().value, [documentString]);
+
   return (
     <div className="reader-content">
       {documentString && (
-        <iframe id="reader-frame" srcDoc={documentString}></iframe>
+        <iframe
+          ref={contentFrameReference}
+          id="reader-frame"
+          key={content_id}
+          srcDoc={documentString}
+        ></iframe>
       )}
     </div>
   );
