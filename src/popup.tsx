@@ -4,7 +4,8 @@ import { Toggle } from "./components/Toggle";
 import { Button } from "./components/Button";
 import { Select } from "./components/Select";
 import { themes } from "./common/themes";
-import theme from "tailwindcss/defaultTheme";
+import { defaultTheme, displayDefaultImages, displayDefaultSVG, displayDefaultVideos } from "./storage/defaults";
+import { ChangeEvent } from "react";
 
 function Popup() {
   const handleViewInSkellyClick = async () => {
@@ -35,20 +36,20 @@ function Popup() {
   const handleCryptoClick = () => chrome.tabs.create({url: `${chrome.runtime.getURL('crypto.html')}`})
 
   const handleToggleImages = (enabled: boolean) => {
-    localStorage.setItem('displayDefaultImages', JSON.stringify(enabled))
+    displayDefaultImages.set(enabled)
   }
 
   const handleToggleSVG = (enabled: boolean) => {
-    localStorage.setItem('displayDefaultSVG', JSON.stringify(enabled))
+    displayDefaultSVG.set(enabled)
   }
 
   const handleToggleVideos = (enabled: boolean) => {
-    localStorage.setItem('displayDefaultVideos', JSON.stringify(enabled))
+    displayDefaultVideos.set(enabled)
   }
 
-  const displayDefaultImages = localStorage.getItem("displayDefaultImages")
-  const displayDefaultSVG = localStorage.getItem("displayDefaultSVG")
-  const displayDefaultVideos = localStorage.getItem("displayDefaultVideos")
+  const handleSetDefaultTheme = (event: ChangeEvent<HTMLSelectElement>) => {
+    defaultTheme.set(event.target.value)
+  }
 
   return (
     <div className='w-[350px] p-4'>
@@ -65,23 +66,23 @@ function Popup() {
           title='Display images'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleImages}
-          defaultValue={JSON.parse(displayDefaultImages ?? 'false')}
+          defaultValue={displayDefaultImages.get()}
         />
         <Toggle
           title='Display SVG'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleSVG}
-          defaultValue={JSON.parse(displayDefaultSVG ?? 'true')}
+          defaultValue={displayDefaultSVG.get()}
         />
         <Toggle
           title='Display videos'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleVideos}
-          defaultValue={JSON.parse(displayDefaultVideos ?? 'false')}
+          defaultValue={displayDefaultVideos.get()}
         />
         <div>
           <label className="text-sm mb-1 block font-medium text-gray-900">Select default theme</label>
-          <Select options={themes} defaultValue='none'/>
+          <Select onChange={handleSetDefaultTheme} options={themes} defaultValue={defaultTheme.get()}/>
         </div>
         <div className='flex justify-between'>
           <Button onClick={handleViewInSkellyClick} className='bg-emerald-900 text-white'>
