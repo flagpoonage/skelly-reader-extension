@@ -23,7 +23,7 @@ const keyCount = (function* keyCounter() {
 
 export function ReaderContent({ html, target_url, extension_id }: Props) {
   const { selectedTheme, contentFrameReference } = useReaderContext();
-  const exampleBoolean = useExampleBoolean();
+  // const exampleBoolean = useExampleBoolean();
   const url = useMemo(() => {
     if (!target_url) {
       return null;

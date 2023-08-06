@@ -24,6 +24,12 @@ function clickHandler(e: MouseEvent) {
     return;
   }
 
+  if (e.ctrlKey || e.shiftKey || e.metaKey || e.button !== 0) {
+    // Only intercept normal link clicks, otherwise just let the browser
+    // do what it wants to
+    return;
+  }
+
   const target = e.target;
 
   const link =
