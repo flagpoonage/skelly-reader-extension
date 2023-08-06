@@ -4,10 +4,36 @@ import { Toggle } from "./components/Toggle";
 import { Button } from "./components/Button";
 import { Select } from "./components/Select";
 import { themes } from "./common/themes";
-import { defaultTheme, displayDefaultImages, displayDefaultSVG, displayDefaultVideos } from "./storage/defaults";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { displayDefaultImages, useDisplayDefaultImages } from "./common/storage/useDisplayDefaultImages";
+import { displayDefaultSVG, useDisplayDefaultSVG } from "./common/storage/useDisplayDefaultSVG";
+import { displayDefaultVideos, useDisplayDefaultVideos } from "./common/storage/useDisplayDefaultVideos";
+import { defaultTheme, useDefaultTheme } from "./common/storage/useDefaultTheme";
+import { ReaderContextFields } from "./reader/ReaderContext";
 
 function Popup() {
+  const [defaults, setDefaults] =
+    useState<ReaderContextFields>({
+      displaySVG: true,
+      selectedTheme: 'none',
+      displayImages: false,
+      displayVideos: false
+    })
+
+  const defaultImages = useDisplayDefaultImages()
+  const defaultSVG = useDisplayDefaultSVG()
+  const defaultVideos = useDisplayDefaultVideos()
+  const defaultThemeValue = useDefaultTheme()
+
+  useEffect(() => {
+    setDefaults({
+      displaySVG: defaultSVG === undefined ? true : defaultSVG,
+      selectedTheme: defaultThemeValue ?? 'none',
+      displayVideos: !!defaultVideos,
+      displayImages: !!defaultImages
+    })
+  }, [defaultImages, defaultSVG, defaultVideos, defaultThemeValue]);
+
   const handleViewInSkellyClick = async () => {
     const app = chrome.runtime.getURL('reader.html');
     const current_window = await chrome.windows.getCurrent();
@@ -51,6 +77,8 @@ function Popup() {
     defaultTheme.set(event.target.value)
   }
 
+  console.log("DEFAUTS >>>> ", defaults)
+
   return (
     <div className='w-[350px] p-4'>
       <div className='flex justify-between items-center border-b-2 pb-2 mb-2'>
@@ -66,23 +94,23 @@ function Popup() {
           title='Display images'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleImages}
-          defaultValue={displayDefaultImages.get()}
+          defaultValue={defaults.displayImages}
         />
         <Toggle
           title='Display SVG'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleSVG}
-          defaultValue={displayDefaultSVG.get()}
+          defaultValue={defaults.displaySVG}
         />
         <Toggle
           title='Display videos'
           description='Default value for all pages open in Skelly'
           onToggle={handleToggleVideos}
-          defaultValue={displayDefaultVideos.get()}
+          defaultValue={defaults.displayVideos}
         />
         <div>
           <label className="text-sm mb-1 block font-medium text-gray-900">Select default theme</label>
-          <Select onChange={handleSetDefaultTheme} options={themes} defaultValue={defaultTheme.get()}/>
+          <Select onChange={handleSetDefaultTheme} options={themes} defaultValue={defaults.selectedTheme}/>
         </div>
         <div className='flex justify-between'>
           <Button onClick={handleViewInSkellyClick} className='bg-emerald-900 text-white'>

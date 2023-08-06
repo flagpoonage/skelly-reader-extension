@@ -9,7 +9,10 @@ export function createStateHook<T>(
     const [data, setData] = useState<T>();
 
     useEffect(() => {
-      const listener = (newv: T | undefined) => setData(newv);
+      const listener = (newv: T | undefined, oldv: T | undefined, v: boolean, key: string) => {
+        console.log(`KEY >>> ${key}`, newv)
+        setData(newv);
+      }
       intf.onChange.addListener(listener, true);
 
       if (callback) {

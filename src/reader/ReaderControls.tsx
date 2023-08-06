@@ -5,7 +5,7 @@ export function ReaderControls() {
   const ctx = useReaderContext();
 
   function onChange(e: ChangeEvent<HTMLSelectElement>) {
-    ctx.setSelectedTheme(e.target.value === 'none' ? null : e.target.value);
+    ctx.setSelectedTheme(e.target.value);
   }
 
   return (

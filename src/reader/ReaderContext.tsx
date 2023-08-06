@@ -7,26 +7,24 @@ import {
   PropsWithChildren,
   MutableRefObject, useEffect
 } from 'react';
-import {
-  displayDefaultVideos,
-  displayDefaultImages,
-  displayDefaultSVG,
-  defaultTheme
-} from "../storage/defaults";
+import { displayDefaultImages } from "../common/storage/useDisplayDefaultImages";
+import { displayDefaultSVG } from "../common/storage/useDisplayDefaultSVG";
+import { displayDefaultVideos } from "../common/storage/useDisplayDefaultVideos";
+import { defaultTheme } from "../common/storage/useDefaultTheme";
 
 export interface ReaderContextFields {
-  selectedTheme: string | null;
+  selectedTheme: string;
   displayImages: boolean
   displaySVG: boolean
   displayVideos: boolean
 }
 
 export interface ReaderContextFunctions {
-  setSelectedTheme: (v: string | null) => void;
+  setSelectedTheme: (v: string) => void;
   sendMessageToFrame: (v: unknown) => void;
-  displayImages: (v: boolean) => void
-  displaySVG: (v: boolean) => void
-  displayVideos: (v: boolean) => void
+  setDisplayImages: (v: boolean) => void
+  setDisplaySVG: (v: boolean) => void
+  setDisplayVideos: (v: boolean) => void
 }
 
 export type ReaderContextValue = ReaderContextFields &
@@ -36,7 +34,7 @@ export type ReaderContextValue = ReaderContextFields &
 
 export const ReaderContext = createContext<ReaderContextValue | null>(null);
 
-function createDefaultContext(): ReaderContextFields {
+export function createDefaultContext(): ReaderContextFields {
   return {
     selectedTheme: 'none',
     displayImages: false,
@@ -53,16 +51,15 @@ export function ReaderContextProvider({
 
   const functions = useMemo<ReaderContextFunctions>(() => {
     return {
-      setSelectedTheme: (v: string | null) =>
-        setCtx((p) => ({...p, selectedTheme: v})),
+      setSelectedTheme: (v: string) => setCtx((p) => ({...p, selectedTheme: v})),
       sendMessageToFrame: (v: unknown) => {
         if (contentFrameReference.current) {
           contentFrameReference.current.contentWindow?.postMessage(v, '*');
         }
       },
-      displayImages: (v: boolean) => setCtx((p) => ({...p, displayImages: v})),
-      displaySVG: (v: boolean) => setCtx((p) => ({...p, displaySVG: v})),
-      displayVideos: (v: boolean) => setCtx((p) => ({...p, displayVideos: v}))
+      setDisplayImages: (v: boolean) => setCtx((p) => ({...p, displayImages: v})),
+      setDisplaySVG: (v: boolean) => setCtx((p) => ({...p, displaySVG: v})),
+      setDisplayVideos: (v: boolean) => setCtx((p) => ({...p, displayVideos: v})),
     };
   }, [setCtx]);
 
@@ -78,10 +75,10 @@ export function ReaderContextProvider({
     const defaultThemeValue = await defaultTheme.get()
 
     setCtx(({
-      displayImages: defaultImages,
-      displayVideos: defaultVideos,
-      displaySVG: defaultSVG,
-      selectedTheme: defaultThemeValue
+      displayImages: !!defaultImages,
+      displayVideos: !!defaultVideos,
+      displaySVG: !!defaultSVG ?? true,
+      selectedTheme: defaultThemeValue ?? 'none'
     }))
   }
 

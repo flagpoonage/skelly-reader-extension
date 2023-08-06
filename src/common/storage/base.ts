@@ -1,9 +1,10 @@
-import { extension } from '../extension';
+import { extension } from '../../extension';
 
 export type StorageListener<T> = (
   newValue: T | undefined,
   oldValue: T | undefined,
   triggeredOnAssign: boolean,
+  key: string
 ) => void | Promise<void>;
 
 export type ExtensionSessionStorageArea = chrome.storage.SessionStorageArea;
@@ -64,7 +65,7 @@ function createStorageTransactionFunctions<T>(
   };
 
   const setter = async (v: T | undefined) => {
-    return await area.set({ [key]: v });
+    return await area.set({[key]: v});
   };
 
   const remover = async () => {
@@ -160,7 +161,7 @@ export function createStorageInterfaceFor<T>(
           return;
         }
 
-        callback(changes[key].newValue, changes[key].oldValue, false);
+        callback(changes[key].newValue, changes[key].oldValue, false, key);
       };
 
       try {
@@ -174,7 +175,7 @@ export function createStorageInterfaceFor<T>(
       if (triggerOnAssigned) {
         (async () => {
           const existing = await area.get(key);
-          callback(existing[key], existing[key], true);
+          callback(existing[key], existing[key], true, key);
         })();
       }
     },
