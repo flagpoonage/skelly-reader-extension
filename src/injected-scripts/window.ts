@@ -1,13 +1,24 @@
 import {
   HashChange,
   createFrameContentReady,
+  createHashChange,
   isHashChange,
+  isTopLevelInformation,
 } from '../reader/reader-messaging';
+import { setTopLevel } from './top-level';
 
 window.addEventListener('message', (ev) => {
-  if (isHashChange(ev.data)) {
+  if (isTopLevelInformation(ev.data)) {
+    setTopLevel(ev.data.info);
+
+    if (ev.data.info.hash) {
+      handleHashChange(createHashChange(ev.data.info.hash));
+    }
+  } else if (isHashChange(ev.data)) {
+    setTopLevel({ hash: ev.data.new_hash });
     handleHashChange(ev.data);
   }
+
   console.log('Internal frame received a message, well done.', ev.data);
 });
 

@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
-import { useExampleBoolean } from '../common/storage';
 
 interface Props {
   html: string;
@@ -58,7 +57,7 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
       if (href === '#') {
         a.removeAttribute('href');
       } else {
-        a.setAttribute('href', `about:srcdoc${href}`);
+        // a.setAttribute('href', `about:srcdoc${href}`);
       }
     });
 

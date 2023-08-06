@@ -31,9 +31,9 @@ function onLoad() {
   }
 
   window.addEventListener('hashchange', async (ev) => {
-    const win = frame.contentWindow;
+    const sandbox_intermediate_window = frame.contentWindow;
 
-    if (!win) {
+    if (!sandbox_intermediate_window) {
       console.log('No window to post to');
       return;
     }
@@ -49,7 +49,10 @@ function onLoad() {
       new_url.origin === old_url.origin &&
       new_url.pathname === old_url.pathname
     ) {
-      win.postMessage(createHashChange(new_url.hash), '*');
+      sandbox_intermediate_window.postMessage(
+        createHashChange(new_url.hash),
+        '*',
+      );
       // Don't load a new page, because it's just the anchor that's changing.
     } else {
       const updated_url = window.location.hash.substring(1);
@@ -60,7 +63,7 @@ function onLoad() {
           url: updated_url,
         });
 
-        win.postMessage(
+        sandbox_intermediate_window.postMessage(
           createSandboxInitialize(
             updated_url,
             response,
@@ -87,9 +90,9 @@ function onLoad() {
   async function handleMessage(event: MessageEvent<unknown>) {
     const { data } = event;
 
-    const win = frame?.contentWindow;
+    const sandbox_intermediate_window = frame?.contentWindow;
 
-    if (!win) {
+    if (!sandbox_intermediate_window) {
       console.log('No window to post to');
       return;
     }
@@ -107,12 +110,18 @@ function onLoad() {
         window.location.hash.split('#')[0],
         window.location.hash.split('#')[1],
       );
+
       history.pushState(
         null,
         '',
         `${window.location.origin}${window.location.pathname}#${
           window.location.hash.split('#')[1]
         }#${data.anchor_name}`,
+      );
+
+      sandbox_intermediate_window.postMessage(
+        createHashChange(`#${data.anchor_name}`),
+        '*',
       );
     }
 
@@ -126,7 +135,7 @@ function onLoad() {
             url: target_url,
           },
           (response) => {
-            win.postMessage(
+            sandbox_intermediate_window.postMessage(
               createSandboxInitialize(
                 target_url,
                 response,

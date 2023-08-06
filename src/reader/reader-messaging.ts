@@ -125,3 +125,30 @@ export function createFrameContentReady(): FrameContentReady {
     type: 'frame_content_ready',
   };
 }
+
+export const windowTopLevelInformation = v.object().schema({
+  type: v.string().equals('top_level_info'),
+  info: v.object().schema({
+    hash: v.string(),
+    source_url: v.string(),
+  }),
+});
+export type TopLevelInformation = ValidatorFunctionResultType<
+  typeof windowTopLevelInformation
+>;
+
+export const isTopLevelInformation = makeTypeAssertion(
+  windowTopLevelInformation,
+);
+
+export function createTopLevelInformation(
+  source_url: URL,
+): TopLevelInformation {
+  return {
+    type: 'top_level_info',
+    info: {
+      hash: source_url.hash,
+      source_url: `${source_url.origin}${source_url.pathname}`,
+    },
+  };
+}

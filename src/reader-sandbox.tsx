@@ -7,8 +7,8 @@ import {
   useReaderContext,
 } from './reader/ReaderContext';
 import {
-  createHashChange,
   createSandboxFrameReady,
+  createTopLevelInformation,
   isAnchorActivateMessage,
   isFrameContentReady,
   isHashChange,
@@ -71,11 +71,7 @@ function Reader() {
           return;
         }
 
-        if (!url.value.hash) {
-          return;
-        }
-
-        ctx.sendMessageToFrame(createHashChange(url.value.hash));
+        ctx.sendMessageToFrame(createTopLevelInformation(url.value));
       }
 
       if (ev.source !== window.parent) {
