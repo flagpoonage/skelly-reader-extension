@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
+import { useExampleBoolean } from '../common/storage';
 
 interface Props {
   html: string;
@@ -22,6 +23,7 @@ const keyCount = (function* keyCounter() {
 
 export function ReaderContent({ html, target_url, extension_id }: Props) {
   const { selectedTheme, contentFrameReference } = useReaderContext();
+  const exampleBoolean = useExampleBoolean();
   const url = useMemo(() => {
     if (!target_url) {
       return null;
