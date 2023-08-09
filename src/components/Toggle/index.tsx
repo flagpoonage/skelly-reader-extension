@@ -1,30 +1,20 @@
-import { useState } from "react";
-
 interface ToggleProps {
   title: string
   description?: string
-  onToggle?: (enabled: boolean) => void
-  defaultValue?: boolean
+  onToggle: (enabled: boolean) => void
+  enabled?: boolean
 }
 
 function Toggle({
                   title,
                   description,
                   onToggle,
-                  defaultValue = false
+                  enabled = false
                 }: ToggleProps) {
-  const [enabled, setEnabled] = useState(defaultValue);
-
-  const handleToggle = () => {
-    const newValue = !enabled
-    setEnabled(newValue)
-    onToggle && onToggle(newValue)
-  }
-
   return (
     <div className="flex justify-between items-center">
       <div
-        onClick={handleToggle}
+        onClick={() => onToggle(!enabled)}
         className="text-sm font-medium text-gray-900 cursor-pointer">
         {title}
         {description && (
@@ -42,13 +32,13 @@ function Toggle({
             readOnly
           />
           <div
-            onClick={handleToggle}
+            onClick={() => onToggle(!enabled)}
             className="w-11 h-6 bg-gray-200 rounded-full peer  peer-focus:ring-green-300  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"
           ></div>
         </label>
       </div>
     </div>
-  );
+  )
 }
 
 export { Toggle }
