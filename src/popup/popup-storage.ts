@@ -1,3 +1,3 @@
 import { configureStorage } from '../common/storage';
 
-export const storage = configureStorage(chrome.storage.local);
+export const popupStorage = configureStorage(chrome.storage.local);

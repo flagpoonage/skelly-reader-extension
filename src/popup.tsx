@@ -5,12 +5,8 @@ import { Button } from './components/Button';
 import { Select } from './components/Select';
 import { themes } from './common/themes';
 import { ChangeEvent } from 'react';
-// import { displayDefaultImages, useDisplayDefaultImages } from "./common/storage/useDisplayDefaultImages";
-// import { displayDefaultSVG, useDisplayDefaultSVG } from "./common/storage/useDisplayDefaultSVG";
-// import { displayDefaultVideos, useDisplayDefaultVideos } from "./common/storage/useDisplayDefaultVideos";
-// import { defaultTheme, useDefaultTheme } from "./common/storage/useDefaultTheme";
 
-import { storage } from './popup/popup-storage';
+import { popupStorage } from './popup/popup-storage';
 
 const {
   useDisplayDefaultImages,
@@ -21,7 +17,7 @@ const {
   DisplayDefaultSVG,
   DisplayDefaultVideos,
   DefaultTheme,
-} = storage;
+} = popupStorage;
 
 function Popup() {
   const defaultImages = useDisplayDefaultImages();

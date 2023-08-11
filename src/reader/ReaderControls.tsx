@@ -1,15 +1,11 @@
 import { ChangeEvent } from 'react';
-// import { useReaderContext } from './ReaderContext';
-import { storage } from './sandbox-storage';
+import { sandboxStorage } from './sandbox-storage';
 
-const { useDefaultTheme } = storage;
+const { useDefaultTheme, DefaultTheme } = sandboxStorage;
 
 export function ReaderControls() {
-  // const ctx = useReaderContext();
-
   function onChange(e: ChangeEvent<HTMLSelectElement>) {
-    storage.DefaultTheme.set(e.target.value);
-    // ctx.setSelectedTheme(e.target.value);
+    DefaultTheme.set(e.target.value);
   }
 
   const theme = useDefaultTheme();

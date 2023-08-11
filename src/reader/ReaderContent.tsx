@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
-import { storage } from './sandbox-storage';
+import { sandboxStorage } from './sandbox-storage';
 
-const { useDefaultTheme } = storage;
+const { useDefaultTheme } = sandboxStorage;
 
 interface Props {
   html: string;
@@ -26,7 +26,6 @@ const keyCount = (function* keyCounter() {
 export function ReaderContent({ html, target_url, extension_id }: Props) {
   const { contentFrameReference } = useReaderContext();
   const selectedTheme = useDefaultTheme();
-  // const exampleBoolean = useExampleBoolean();
   const url = useMemo(() => {
     if (!target_url) {
       return null;
@@ -130,6 +129,7 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
 
   useEffect(() => {});
 
+  // TODO: Should be a hash of string.
   const content_id = useMemo(() => keyCount.next().value, [documentString]);
 
   return (
