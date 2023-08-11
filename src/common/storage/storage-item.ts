@@ -23,10 +23,3 @@ export function configureStorageItem<TYPE, K extends string = string>(
       : never;
   };
 }
-
-const c = configureStorageItem<number, 'Anastatus'>(
-  'Anastatus',
-  chrome.storage.local,
-);
-
-c.useAnastatus();

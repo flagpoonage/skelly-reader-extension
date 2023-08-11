@@ -43,7 +43,11 @@ export type ExtensionStorageTransactionOf<T> = Omit<
 >;
 
 export interface StorageChannel {
+  // Inference type only, any is necessary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set: (items: { [key: string]: any }) => Promise<void>;
+  // Inference type only, any is necessary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get: <K extends string>(key: K) => Promise<{ [X in K]: any }>;
   remove: (keys: string | string[]) => Promise<void>;
   onChanged: {
