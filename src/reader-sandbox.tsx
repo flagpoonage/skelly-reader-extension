@@ -7,6 +7,7 @@ import {
   useReaderContext,
 } from './reader/ReaderContext';
 import {
+  createLinkActivateMessage,
   createSandboxFrameReady,
   createTopLevelInformation,
   isAnchorActivateMessage,
@@ -102,7 +103,17 @@ function Reader() {
 
   return (
     <div className="reader">
-      <ReaderControls />
+      <ReaderControls
+        currentUrl={pageState?.target_url}
+        onSubmitUrl={(url: string) =>
+          window.parent.postMessage(
+            createLinkActivateMessage({
+              link_href: url,
+            }),
+            '*',
+          )
+        }
+      />
       {pageState && (
         <ReaderContent
           html={pageState.html}

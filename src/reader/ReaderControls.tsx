@@ -1,9 +1,16 @@
 import { ChangeEvent } from 'react';
+// import { useReaderContext } from './ReaderContext';
 import { sandboxStorage } from './sandbox-storage';
+import { ReaderAddressBar } from './ReaderAddressBar';
 
 const { useDefaultTheme, DefaultTheme } = sandboxStorage;
 
-export function ReaderControls() {
+interface Props {
+  currentUrl: string | undefined;
+  onSubmitUrl: (url: string) => void;
+}
+
+export function ReaderControls({ currentUrl, onSubmitUrl }: Props) {
   function onChange(e: ChangeEvent<HTMLSelectElement>) {
     DefaultTheme.set(e.target.value);
   }
@@ -12,7 +19,6 @@ export function ReaderControls() {
 
   return (
     <footer className="reader-controls">
-      <div>Reader Controls</div>
       <div>
         <select onChange={onChange} value={theme ?? 'none'}>
           <option value="none">No theme</option>
@@ -24,6 +30,7 @@ export function ReaderControls() {
           <option value="rust">Rust</option>
         </select>
       </div>
+      <ReaderAddressBar currentUrl={currentUrl} onSubmitUrl={onSubmitUrl} />
     </footer>
   );
 }
