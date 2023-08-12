@@ -1,9 +1,8 @@
-import { extension } from '../extension';
-
 export type StorageListener<T> = (
   newValue: T | undefined,
   oldValue: T | undefined,
   triggeredOnAssign: boolean,
+  key: string,
 ) => void | Promise<void>;
 
 export type ExtensionSessionStorageArea = chrome.storage.SessionStorageArea;
@@ -43,6 +42,22 @@ export type ExtensionStorageTransactionOf<T> = Omit<
   'onChange' | 'transact'
 >;
 
+export interface StorageChannel {
+  // Inference type only, any is necessary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set: (items: { [key: string]: any }) => Promise<void>;
+  // Inference type only, any is necessary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get: <K extends string>(key: K) => Promise<{ [X in K]: any }>;
+  remove: (keys: string | string[]) => Promise<void>;
+  onChanged: {
+    addListener: (cb: ExtensionStorageListener) => void;
+    removeListener: (cb: ExtensionStorageListener) => void;
+  };
+}
+
+export type StorageSystem = StorageChannel;
+
 // Inference type only, any is necessary.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ExtractExtensionStorageType<T extends ExtensionStorageOf<any>> =
@@ -50,7 +65,7 @@ export type ExtractExtensionStorageType<T extends ExtensionStorageOf<any>> =
 
 function createStorageTransactionFunctions<T>(
   key: string,
-  area: ExtensionStorageArea,
+  area: StorageSystem,
 ) {
   const getter = async () => {
     const stored_data = await area.get(key);
@@ -81,7 +96,7 @@ function createStorageTransactionFunctions<T>(
 
 export function createStorageInterfaceFor<T>(
   key: string,
-  area: ExtensionStorageArea,
+  area: StorageSystem,
 ): ExtensionStorageOf<T> {
   type K = T | undefined;
 
@@ -160,7 +175,7 @@ export function createStorageInterfaceFor<T>(
           return;
         }
 
-        callback(changes[key].newValue, changes[key].oldValue, false);
+        callback(changes[key].newValue, changes[key].oldValue, false, key);
       };
 
       try {
@@ -174,7 +189,7 @@ export function createStorageInterfaceFor<T>(
       if (triggerOnAssigned) {
         (async () => {
           const existing = await area.get(key);
-          callback(existing[key], existing[key], true);
+          callback(existing[key], existing[key], true, key);
         })();
       }
     },
@@ -201,16 +216,4 @@ export function createStorageInterfaceFor<T>(
     remove: remover,
     onChange,
   };
-}
-
-export function createSessionStorageInterfaceFor<T>(
-  key: string,
-): ExtensionStorageOf<T> {
-  return createStorageInterfaceFor<T>(key, extension.storage.session);
-}
-
-export function createLocalStorageInterfaceFor<T>(
-  key: string,
-): ExtensionStorageOf<T> {
-  return createStorageInterfaceFor<T>(key, extension.storage.local);
 }

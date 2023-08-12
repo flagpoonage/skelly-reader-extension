@@ -1,18 +1,20 @@
 import { ChangeEvent } from 'react';
-import { useReaderContext } from './ReaderContext';
+import { sandboxStorage } from './sandbox-storage';
+
+const { useDefaultTheme, DefaultTheme } = sandboxStorage;
 
 export function ReaderControls() {
-  const ctx = useReaderContext();
-
   function onChange(e: ChangeEvent<HTMLSelectElement>) {
-    ctx.setSelectedTheme(e.target.value === 'none' ? null : e.target.value);
+    DefaultTheme.set(e.target.value);
   }
+
+  const theme = useDefaultTheme();
 
   return (
     <footer className="reader-controls">
       <div>Reader Controls</div>
       <div>
-        <select onChange={onChange} value={ctx.selectedTheme ?? 'none'}>
+        <select onChange={onChange} value={theme ?? 'none'}>
           <option value="none">No theme</option>
           <option value="greenscreen">Green Screen</option>
           <option value="jamesh.me">jamesh.me</option>

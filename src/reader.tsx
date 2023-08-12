@@ -1,3 +1,4 @@
+import { createWindowCommsStorageOracle } from './common/storage/comms';
 import { extension } from './extension';
 import {
   createHashChange,
@@ -13,6 +14,8 @@ function createAuthKey() {
   const authkey = crypto.getRandomValues(buffer);
   return btoa(String.fromCharCode.apply(null, authkey as unknown as number[]));
 }
+
+createWindowCommsStorageOracle(chrome.storage.local);
 
 const target_url = window.location.hash.substring(1);
 
