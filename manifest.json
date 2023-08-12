@@ -23,6 +23,6 @@
   "sandbox": {
     "pages": ["reader-sandbox.html"]
   },
-  "permissions": ["storage", "tabs", "webRequest"],
+  "permissions": ["storage", "unlimitedStorage", "tabs", "webRequest"],
   "host_permissions": ["http://*/*", "https://*/*"]
 }
