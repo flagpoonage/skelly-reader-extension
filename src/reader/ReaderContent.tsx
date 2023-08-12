@@ -1,9 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
 import { sandboxStorage } from './sandbox-storage';
 
-const {useDefaultTheme, useDisplayDefaultSVG, useDisplayDefaultImages} = sandboxStorage;
+const { useDefaultTheme, useDisplayDefaultSVG, useDisplayDefaultImages } =
+  sandboxStorage;
 
 interface Props {
   html: string;
@@ -23,11 +24,11 @@ const keyCount = (function* keyCounter() {
   return null;
 })();
 
-export function ReaderContent({html, target_url, extension_id}: Props) {
-  const {contentFrameReference} = useReaderContext();
+export function ReaderContent({ html, target_url, extension_id }: Props) {
+  const { contentFrameReference } = useReaderContext();
   const selectedTheme = useDefaultTheme();
-  const displayDefaultSVG = useDisplayDefaultSVG()
-  const displayDefaultImages = useDisplayDefaultImages()
+  const displayDefaultSVG = useDisplayDefaultSVG();
+  const displayDefaultImages = useDisplayDefaultImages();
   const url = useMemo(() => {
     if (!target_url) {
       return null;
@@ -70,8 +71,56 @@ export function ReaderContent({html, target_url, extension_id}: Props) {
       el.removeAttribute('style');
     });
 
+    switch (displayDefaultSVG) {
+      case false:
+        Array.from(body_document.getElementsByTagName('svg')).forEach((el) => {
+          const input = body_document.createElement('input');
+          input.type = 'hidden';
+          input.className = 'skelly-svg';
+          input.setAttribute('value', el.outerHTML);
+          el.replaceWith(input);
+        });
+        break;
+      case true:
+        Array.from(body_document.getElementsByClassName('skelly-svg')).forEach(
+          (el) => {
+            const svg = el.getAttribute('value');
+            el.outerHTML = svg || '';
+          },
+        );
+        break;
+    }
+
+    switch (displayDefaultImages) {
+      case false:
+        Array.from(body_document.getElementsByTagName('img')).forEach((el) => {
+          if (el.src.startsWith('data:')) {
+            return;
+          }
+          const input = body_document.createElement('input');
+          input.type = 'hidden';
+          input.className = 'skelly-image';
+          input.setAttribute('value', el.src);
+          el.replaceWith(input);
+        });
+        break;
+      case true:
+        Array.from(
+          body_document.getElementsByClassName('skelly-image'),
+        ).forEach((el) => {
+          const skellyImage = el.getAttribute('value');
+          if (!skellyImage) {
+            return;
+          }
+          const image = body_document.createElement('img');
+          image.setAttribute('src', skellyImage);
+          el.replaceWith(image);
+        });
+        break;
+    }
+
     return body_document;
-  }, [html]);
+  }, [html, displayDefaultSVG, displayDefaultImages]);
 
   const documentString = useMemo(() => {
     if (!strippedDocument) {
@@ -97,50 +146,6 @@ export function ReaderContent({html, target_url, extension_id}: Props) {
       head.prepend(base);
     }
 
-    switch (displayDefaultSVG) {
-      case false:
-        Array.from(strippedDocument.getElementsByTagName('svg')).forEach((el) => {
-          const input = strippedDocument.createElement('input');
-          input.type = 'hidden'
-          input.className = 'skelly-svg'
-          input.setAttribute('value', el.outerHTML);
-          el.replaceWith(input);
-        });
-        break;
-      case true:
-        Array.from(strippedDocument.getElementsByClassName('skelly-svg')).forEach((el) => {
-          const svg = el.getAttribute('value')
-          el.outerHTML = svg || ''
-        })
-        break;
-    }
-
-    switch (displayDefaultImages) {
-      case false:
-        Array.from(strippedDocument.getElementsByTagName('img')).forEach((el) => {
-          if (el.src.startsWith('data:')) {
-            return;
-          }
-          const input = strippedDocument.createElement('input');
-          input.type = 'hidden'
-          input.className = 'skelly-image'
-          input.setAttribute('value', el.src);
-          el.replaceWith(input);
-        });
-        break;
-      case true:
-        Array.from(strippedDocument.getElementsByClassName('skelly-image')).forEach((el) => {
-          const skellyImage = el.getAttribute('value')
-          if (!skellyImage) {
-            return;
-          }
-          const image = strippedDocument.createElement('img')
-          image.setAttribute('src', skellyImage)
-          el.replaceWith(image)
-        })
-        break;
-    }
-
     const csp_header = strippedDocument.createElement('meta');
     csp_header.httpEquiv = 'Content-Security-Policy';
     csp_header.content = "script-src 'unsafe-inline'";
@@ -161,7 +166,7 @@ export function ReaderContent({html, target_url, extension_id}: Props) {
     const doc_string = sx.serializeToString(strippedDocument);
 
     return doc_string;
-  }, [strippedDocument, selectedTheme, url, extension_id, displayDefaultSVG, displayDefaultImages]);
+  }, [strippedDocument, selectedTheme, url, extension_id]);
 
   // TODO: Should be a hash of string.
   const content_id = useMemo(() => keyCount.next().value, [documentString]);
