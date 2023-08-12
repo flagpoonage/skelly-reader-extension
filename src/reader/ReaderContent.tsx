@@ -117,7 +117,6 @@ export function ReaderContent({html, target_url, extension_id}: Props) {
 
     switch (displayDefaultImages) {
       case false:
-        // handle `IMG`
         Array.from(strippedDocument.getElementsByTagName('img')).forEach((el) => {
           if (el.src.startsWith('data:')) {
             return;
@@ -130,7 +129,6 @@ export function ReaderContent({html, target_url, extension_id}: Props) {
         });
         break;
       case true:
-        // handle `IMG`
         Array.from(strippedDocument.getElementsByClassName('skelly-image')).forEach((el) => {
           const skellyImage = el.getAttribute('value')
           if (!skellyImage) {
