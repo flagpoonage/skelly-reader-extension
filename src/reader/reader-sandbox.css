@@ -29,6 +29,19 @@ body {
   background-color: #333;
   display: flex;
   align-items: center;
+  gap: 1rem;
+}
+
+.reader-controls > :first-child {
+  margin-left: 1rem;
+}
+
+.reader-controls > :last-child {
+  margin-right: 1rem;
+}
+
+.reader-controls > * {
+  padding: 1rem 0;
 }
 
 #reader-frame {
@@ -37,3 +50,25 @@ body {
   display: block;
   border: none;
 }
+
+.address-bar {
+  flex: 1 0 auto;
+  display: flex;
+}
+
+.address-input {
+  flex: 1 0 auto;
+  background-color: black;
+  color: #999;
+}
+
+.address-bar form {
+  display: flex;
+  flex: 1 0 auto;
+}
+
+.address-input:focus {
+  color: white;
+}
+
+

@@ -127,9 +127,22 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
       return;
     }
 
+    // We wouldn't need to do this if we knew the stippedDocument hadn't changed.
     Array.from(
       strippedDocument.querySelectorAll('link[rel=stylesheet]'),
     ).forEach((el) => el.remove());
+
+    Array.from(strippedDocument.querySelectorAll('script')).forEach((el) =>
+      el.remove(),
+    );
+
+    Array.from(strippedDocument.querySelectorAll('meta[http-equiv]')).forEach(
+      (el) => el.remove(),
+    );
+
+    Array.from(strippedDocument.querySelectorAll('base')).forEach((el) =>
+      el.remove(),
+    );
 
     const head = strippedDocument.getElementsByTagName('head')[0];
     if (selectedTheme) {
