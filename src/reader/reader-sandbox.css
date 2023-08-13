@@ -11,18 +11,11 @@ body {
   height: 100%;
 }
 
-button {
-  border: solid 2px white;
-  color: white;
-  cursor: pointer;
-  background-color: transparent;
-  border-radius: 5px;
-}
-
 .reader {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
 }
 
@@ -34,6 +27,21 @@ button {
   position: relative;
   flex: 0 0 auto;
   background-color: #333;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reader-controls > :first-child {
+  margin-left: 1rem;
+}
+
+.reader-controls > :last-child {
+  margin-right: 1rem;
+}
+
+.reader-controls > * {
+  padding: 1rem 0;
 }
 
 #reader-frame {
@@ -42,3 +50,25 @@ button {
   display: block;
   border: none;
 }
+
+.address-bar {
+  flex: 1 0 auto;
+  display: flex;
+}
+
+.address-input {
+  flex: 1 0 auto;
+  background-color: black;
+  color: #999;
+}
+
+.address-bar form {
+  display: flex;
+  flex: 1 0 auto;
+}
+
+.address-input:focus {
+  color: white;
+}
+
+

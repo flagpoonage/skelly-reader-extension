@@ -308,6 +308,16 @@ export function createWindowCommsStorageSlave(target: Window): StorageSystem {
 
       resolver(ev.data.response);
     }
+    if (isStorageSetResponse(ev.data) || isStorageRemoveResponse(ev.data)) {
+      const resolver = request_resolvers.get(ev.data.operation.request_id);
+
+      if (!resolver) {
+        console.error('Missing resolver for request', ev.data.operation);
+        return;
+      }
+
+      resolver(void 0);
+    }
     if (isStorageChangeNotification(ev.data)) {
       const changes = ev.data.changes;
       listeners.forEach((l) => l(changes));
