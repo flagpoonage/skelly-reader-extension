@@ -18,6 +18,7 @@ import {
 } from './reader/reader-messaging';
 import { useEffect, useState } from 'react';
 import { safeUrl } from './common/safe-url';
+import { useOnClickOutside } from "./hooks/useOnClickOutside";
 
 interface PageState {
   html: string;
@@ -37,7 +38,7 @@ function Reader() {
         //   pageState?.auth_key !== ev.data.known_id ||
         //   pageState.extension_id !== ev.data.ext_id
         // ) {
-        //   console.error('Doesnt match what we want');
+        //   console.error('Doesn't match what we want');
         //   return;
         // }
 
@@ -101,18 +102,19 @@ function Reader() {
     };
   }, [pageState, ctx]);
 
+  const handleOnSubmitUrl = (url: string) =>
+    window.parent.postMessage(
+      createLinkActivateMessage({
+        link_href: url,
+      }),
+      '*',
+    )
+
   return (
     <div className="reader">
       <ReaderControls
         currentUrl={pageState?.target_url}
-        onSubmitUrl={(url: string) =>
-          window.parent.postMessage(
-            createLinkActivateMessage({
-              link_href: url,
-            }),
-            '*',
-          )
-        }
+        onSubmitUrl={handleOnSubmitUrl}
       />
       {pageState && (
         <ReaderContent
@@ -129,6 +131,6 @@ window.parent.postMessage(createSandboxFrameReady(), window.location.origin);
 
 renderElement(
   <ReaderContextProvider>
-    <Reader />
+    <Reader/>
   </ReaderContextProvider>,
 );

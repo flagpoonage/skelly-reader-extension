@@ -3,8 +3,12 @@ import { safeUrl } from '../common/safe-url';
 import { useReaderContext } from './ReaderContext';
 import { sandboxStorage } from './sandbox-storage';
 
-const { useDefaultTheme, useDisplayDefaultSVG, useDisplayDefaultImages } =
-  sandboxStorage;
+const {
+  useDefaultTheme,
+  useDisplayDefaultSVG,
+  useDisplayDefaultImages,
+  useDisplayDefaultVideos
+} = sandboxStorage;
 
 interface Props {
   html: string;
@@ -24,11 +28,12 @@ const keyCount = (function* keyCounter() {
   return null;
 })();
 
-export function ReaderContent({ html, target_url, extension_id }: Props) {
-  const { contentFrameReference } = useReaderContext();
+export function ReaderContent({html, target_url, extension_id}: Props) {
+  const {contentFrameReference} = useReaderContext();
   const selectedTheme = useDefaultTheme();
   const displayDefaultSVG = useDisplayDefaultSVG();
   const displayDefaultImages = useDisplayDefaultImages();
+  const displayDefaultVideos = useDisplayDefaultVideos();
   const url = useMemo(() => {
     if (!target_url) {
       return null;
@@ -119,8 +124,33 @@ export function ReaderContent({ html, target_url, extension_id }: Props) {
         break;
     }
 
+    switch (displayDefaultVideos) {
+      case false:
+        Array.from(body_document.getElementsByTagName('video')).forEach((el) => {
+          const input = body_document.createElement('input');
+          input.type = 'hidden';
+          input.className = 'skelly-video';
+          input.setAttribute('value', el.src);
+          el.replaceWith(input);
+        });
+        break;
+      case true:
+        Array.from(
+          body_document.getElementsByClassName('skelly-video'),
+        ).forEach((el) => {
+          const skellyVideo = el.getAttribute('value');
+          if (!skellyVideo) {
+            return;
+          }
+          const video = body_document.createElement('video');
+          video.setAttribute('src', skellyVideo);
+          el.replaceWith(video);
+        });
+        break;
+    }
+
     return body_document;
-  }, [html, displayDefaultSVG, displayDefaultImages]);
+  }, [html, displayDefaultSVG, displayDefaultImages, displayDefaultVideos]);
 
   const documentString = useMemo(() => {
     if (!strippedDocument) {
